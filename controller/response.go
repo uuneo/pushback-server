@@ -39,3 +39,8 @@ func data(data interface{}) CommonResp {
 		Data:      data,
 	}
 }
+
+type DeviceInfo struct {
+	Key   string `json:"key"`
+	Token string `json:"token"`
+}

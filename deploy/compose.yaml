@@ -1,9 +1,8 @@
-version: '3'
 
 services:
-  NewBearService:
-    image: thurmantsao/alarm-paw-server
-    container_name: NewBearService
+  PushbackServer:
+    image: ghcr.io/uuneo/pushback:latest
+    container_name: PushbackServer
     restart: always
     ports:
       - "8080:8080"

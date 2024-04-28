@@ -1,11 +1,11 @@
 package database
 
 import (
-	"NewBearService/config"
 	"database/sql"
 	"fmt"
 	"github.com/lithammer/shortuuid/v3"
 	"log"
+	"pushbackServer/config"
 )
 
 type MySQL struct {
@@ -23,7 +23,7 @@ func CreateDbSchema() string {
 		") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4"
 }
 
-func NewMySQL(dsn string) Database {
+func NewMySQL(dsn string) (Database, error) {
 	db, err := sql.Open("mysql", dsn)
 
 	if err != nil {
@@ -36,7 +36,7 @@ func NewMySQL(dsn string) Database {
 	}
 
 	mysqlDB = db
-	return &MySQL{}
+	return &MySQL{}, err
 }
 
 func (d *MySQL) CountAll() (int, error) {
@@ -78,4 +78,16 @@ func (d *MySQL) SaveDeviceTokenByKey(key, token string) (string, error) {
 
 func (d *MySQL) Close() error {
 	return mysqlDB.Close()
+}
+
+func (d *MySQL) KeyExists(key string) bool {
+	var exists bool
+	rawString := fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM `%s` WHERE `key`=?)", config.LocalConfig.System.Name)
+	err := mysqlDB.QueryRow(rawString, key).Scan(&exists)
+	if err != nil {
+		log.Printf("failed to check key existence: %v", err)
+		return false
+	}
+
+	return exists
 }

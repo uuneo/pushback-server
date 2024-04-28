@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片上传</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --error-color: #e74c3c;
+            --success-color: #2ecc71;
+            --text-color: #2c3e50;
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .upload-container {
+            background: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .upload-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .upload-header h1 {
+            color: var(--primary-color);
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-header p {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e1e1e1;
+            border-radius: var(--border-radius);
+            font-size: 1rem;
+            transition: var(--transition);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+        }
+
+        .drop-zone {
+            border: 2px dashed #e1e1e1;
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            margin-bottom: 1.5rem;
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--primary-color);
+            background: rgba(74, 144, 226, 0.05);
+        }
+
+        .drop-zone p {
+            margin: 0;
+            color: #666;
+        }
+
+        .drop-zone .icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-bar {
+            height: 4px;
+            background: #e1e1e1;
+            border-radius: 2px;
+            margin-top: 1rem;
+            overflow: hidden;
+            display: none;
+        }
+
+        .progress-bar .progress {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0;
+            transition: width 0.3s ease;
+        }
+
+        /* 添加新的上传状态样式 */
+        .upload-status {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            font-size: 0.9rem;
+        }
+
+        .upload-status.active {
+            display: block;
+        }
+
+        .upload-status .status-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .upload-status .status-label {
+            color: #666;
+        }
+
+        .upload-status .status-value {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .upload-status .speed {
+            color: var(--primary-color);
+        }
+
+        .upload-status .size {
+            color: var(--text-color);
+        }
+
+        /* 添加加载动画 */
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        .loading-spinner.active {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .submit-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: var(--border-radius);
+            width: 100%;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn .btn-text {
+            transition: opacity 0.3s ease;
+        }
+
+        .submit-btn.uploading .btn-text {
+            opacity: 0.7;
+        }
+
+        /* 修改消息框样式 */
+        .message {
+            margin: 0 auto 1.5rem;
+            padding: 0.8rem 1.2rem;
+            border-radius: var(--border-radius);
+            display: none;
+            animation: fadeIn 0.3s ease;
+            max-width: 100%;
+            text-align: center;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .message.success {
+            background: rgba(46, 204, 113, 0.1);
+            color: var(--success-color);
+            display: block;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+
+        .message.error {
+            background: rgba(231, 76, 60, 0.1);
+            color: var(--error-color);
+            display: block;
+            border: 1px solid rgba(231, 76, 60, 0.2);
+        }
+
+        .message.info {
+            background: rgba(74, 144, 226, 0.1);
+            color: var(--primary-color);
+            display: block;
+            border: 1px solid rgba(74, 144, 226, 0.2);
+        }
+
+        .message::before {
+            margin-right: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .message.success::before {
+            content: "✓";
+        }
+
+        .message.error::before {
+            content: "!";
+        }
+
+        .message.info::before {
+            content: "ℹ";
+        }
+
+        /* 添加上传结果样式 */
+        .upload-result {
+            display: none;
+            margin-top: 1rem;
+            padding: 1.5rem;
+            background: #f8f9fa;
+            border-radius: var(--border-radius);
+            border: 1px solid #e1e1e1;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .upload-result.active {
+            display: block;
+        }
+
+        .upload-result .result-header {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-result .result-header::before {
+            content: "✓";
+            color: var(--success-color);
+            font-size: 1.2rem;
+        }
+
+        .upload-result .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.8rem;
+            font-size: 0.95rem;
+            padding: 0.5rem;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+
+        .upload-result .result-label {
+            color: #666;
+            font-weight: 500;
+        }
+
+        .upload-result .result-value {
+            font-weight: 500;
+            color: var(--text-color);
+            word-break: break-all;
+            text-align: right;
+            max-width: 70%;
+        }
+
+        .upload-result .result-actions {
+            margin-top: 1.5rem;
+            display: flex;
+            gap: 0.8rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+
+        .upload-result .result-actions button {
+            padding: 0.7rem 1.2rem;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .upload-result .result-actions .copy-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .upload-result .result-actions .copy-btn:hover {
+            background: #357abd;
+            transform: translateY(-1px);
+        }
+
+        .upload-result .result-actions .reset-btn {
+            background: #e1e1e1;
+            color: var(--text-color);
+        }
+
+        .upload-result .result-actions .reset-btn:hover {
+            background: #d1d1d1;
+            transform: translateY(-1px);
+        }
+
+        .upload-result .result-actions button:active {
+            transform: translateY(0);
+        }
+
+        .upload-result .result-actions .copy-btn::before {
+            content: "📋";
+        }
+
+        .upload-result .result-actions .reset-btn::before {
+            content: "🔄";
+        }
+
+        @media (max-width: 480px) {
+            .upload-container {
+                padding: 1.5rem;
+            }
+
+            .upload-header h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <div class="upload-header">
+            <h1>图片上传</h1>
+            <p>请填写信息并选择要上传的图片</p>
+        </div>
+        
+        <!-- 移动消息框到这里 -->
+        <div id="message" class="message"></div>
+        
+        <form id="uploadForm">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required placeholder="请输入用户名">
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required placeholder="请输入密码">
+            </div>
+
+            <div class="form-group">
+                <label for="filename">文件名称</label>
+                <input type="text" id="filename" name="filename" required placeholder="请输入文件名称">
+            </div>
+
+            <div class="drop-zone" id="dropZone">
+                <div class="icon">📁</div>
+                <p>拖放图片到这里或点击选择文件</p>
+                <input type="file" id="fileInput" name="file" accept="image/*" style="display: none">
+            </div>
+
+            <div class="progress-bar" id="progressBar">
+                <div class="progress" id="progress"></div>
+            </div>
+
+            <div class="upload-status" id="uploadStatus">
+                <div class="status-row">
+                    <span class="status-label">文件名：</span>
+                    <span class="status-value" id="statusFileName">-</span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">文件大小：</span>
+                    <span class="status-value size" id="statusFileSize">-</span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">上传进度：</span>
+                    <span class="status-value" id="statusProgress">-</span>
+                </div>
+                <div class="status-row">
+                    <span class="status-label">上传速度：</span>
+                    <span class="status-value speed" id="statusSpeed">-</span>
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn" id="submitBtn">
+                <div class="loading-spinner" id="loadingSpinner"></div>
+                <span class="btn-text">上传图片</span>
+            </button>
+        </form>
+
+        <div class="upload-result" id="uploadResult">
+            <div class="result-header">上传结果</div>
+            <div class="result-item">
+                <span class="result-label">文件名：</span>
+                <span class="result-value" id="resultFileName">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">文件路径：</span>
+                <span class="result-value" id="resultFilePath">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">文件大小：</span>
+                <span class="result-value" id="resultFileSize">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">文件类型：</span>
+                <span class="result-value" id="resultFileType">-</span>
+            </div>
+            <div class="result-actions">
+                <button class="copy-btn" id="copyPathBtn">复制路径</button>
+                <button class="reset-btn" id="resetFormBtn">继续上传</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadForm = document.getElementById('uploadForm');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const message = document.getElementById('message');
+
+        const uploadStatus = document.getElementById('uploadStatus');
+        const statusFileName = document.getElementById('statusFileName');
+        const statusFileSize = document.getElementById('statusFileSize');
+        const statusProgress = document.getElementById('statusProgress');
+        const statusSpeed = document.getElementById('statusSpeed');
+        const submitBtn = document.getElementById('submitBtn');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const btnText = submitBtn.querySelector('.btn-text');
+
+        const uploadResult = document.getElementById('uploadResult');
+        const resultFileName = document.getElementById('resultFileName');
+        const resultFilePath = document.getElementById('resultFilePath');
+        const resultFileSize = document.getElementById('resultFileSize');
+        const resultFileType = document.getElementById('resultFileType');
+        const copyPathBtn = document.getElementById('copyPathBtn');
+        const resetFormBtn = document.getElementById('resetFormBtn');
+
+        // 压缩设置
+        const compressionSettings = {
+            maxWidth: 1920, // 最大宽度
+            maxHeight: 1080, // 最大高度
+            quality: 0.8, // 压缩质量 (0-1)
+            maxSizeMB: 2 // 最大文件大小（MB）
+        };
+
+        // 允许的图片类型
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'image/svg+xml'];
+        const allowedExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg'];
+
+        // 压缩图片
+        async function compressImage(file) {
+            return new Promise((resolve, reject) => {
+                // 如果是 SVG，不进行压缩
+                if (file.type === 'image/svg+xml') {
+                    resolve(file);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        // 计算新的尺寸，保持宽高比
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        if (width > compressionSettings.maxWidth) {
+                            height = (compressionSettings.maxWidth * height) / width;
+                            width = compressionSettings.maxWidth;
+                        }
+                        
+                        if (height > compressionSettings.maxHeight) {
+                            width = (compressionSettings.maxHeight * width) / height;
+                            height = compressionSettings.maxHeight;
+                        }
+
+                        // 创建 canvas
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        
+                        // 绘制图片
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        // 转换为 Blob
+                        canvas.toBlob((blob) => {
+                            // 检查压缩后的大小
+                            if (blob.size > compressionSettings.maxSizeMB * 1024 * 1024) {
+                                showMessage(`图片太大，请选择小于 ${compressionSettings.maxSizeMB}MB 的图片`, 'error');
+                                reject(new Error('Image too large'));
+                                return;
+                            }
+
+                            // 创建新的文件对象
+                            const compressedFile = new File([blob], file.name, {
+                                type: file.type,
+                                lastModified: Date.now()
+                            });
+
+                            // 显示压缩信息
+                            const compressionRatio = ((1 - compressedFile.size / file.size) * 100).toFixed(1);
+                            showMessage(`图片已压缩，大小减少 ${compressionRatio}%`, 'success');
+                            
+                            resolve(compressedFile);
+                        }, file.type, compressionSettings.quality);
+                    };
+                    img.onerror = () => {
+                        reject(new Error('图片加载失败'));
+                    };
+                };
+                reader.onerror = () => {
+                    reject(new Error('文件读取失败'));
+                };
+            });
+        }
+
+        // 验证文件类型
+        function validateFile(file) {
+            if (!allowedTypes.includes(file.type)) {
+                showMessage('只允许上传图片文件（JPG、PNG、GIF、WEBP、BMP、SVG）', 'error');
+                return false;
+            }
+            return true;
+        }
+
+        // 拖放功能
+        dropZone.addEventListener('click', () => fileInput.click());
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                const file = files[0];
+                if (validateFile(file)) {
+                    try {
+                        const compressedFile = await compressImage(file);
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(compressedFile);
+                        fileInput.files = dataTransfer.files;
+                        updateDropZoneText(compressedFile.name);
+                    } catch (error) {
+                        showMessage(error.message, 'error');
+                        fileInput.value = '';
+                        dropZone.querySelector('p').textContent = '拖放图片到这里或点击选择文件';
+                    }
+                } else {
+                    fileInput.value = '';
+                    dropZone.querySelector('p').textContent = '拖放图片到这里或点击选择文件';
+                }
+            }
+        });
+
+        fileInput.addEventListener('change', async (e) => {
+            if (e.target.files.length) {
+                const file = e.target.files[0];
+                if (validateFile(file)) {
+                    try {
+                        const compressedFile = await compressImage(file);
+                        const dataTransfer = new DataTransfer();
+                        dataTransfer.items.add(compressedFile);
+                        e.target.files = dataTransfer.files;
+                        updateDropZoneText(compressedFile.name);
+                    } catch (error) {
+                        showMessage(error.message, 'error');
+                        e.target.value = '';
+                        dropZone.querySelector('p').textContent = '拖放图片到这里或点击选择文件';
+                    }
+                } else {
+                    e.target.value = '';
+                    dropZone.querySelector('p').textContent = '拖放图片到这里或点击选择文件';
+                }
+            }
+        });
+
+        function updateDropZoneText(filename) {
+            const extension = filename.substring(filename.lastIndexOf('.')).toLowerCase();
+            if (allowedExtensions.includes(extension)) {
+                dropZone.querySelector('p').textContent = `已选择: ${filename}`;
+            } else {
+                showMessage('不支持的文件类型', 'error');
+                fileInput.value = '';
+                dropZone.querySelector('p').textContent = '拖放图片到这里或点击选择文件';
+            }
+        }
+
+        // 格式化文件大小
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 B';
+            const k = 1024;
+            const sizes = ['B', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 格式化速度
+        function formatSpeed(bytesPerSecond) {
+            return formatFileSize(bytesPerSecond) + '/s';
+        }
+
+        // 更新上传状态
+        function updateUploadStatus(file, loaded, total, startTime) {
+            const now = Date.now();
+            const elapsedTime = (now - startTime) / 1000; // 转换为秒
+            const speed = loaded / elapsedTime;
+            const progress = (loaded / total) * 100;
+
+            statusFileName.textContent = file.name;
+            statusFileSize.textContent = `${formatFileSize(loaded)} / ${formatFileSize(total)}`;
+            statusProgress.textContent = `${progress.toFixed(1)}%`;
+            statusSpeed.textContent = formatSpeed(speed);
+        }
+
+        // 重置上传状态
+        function resetUploadStatus() {
+            statusFileName.textContent = '-';
+            statusFileSize.textContent = '-';
+            statusProgress.textContent = '-';
+            statusSpeed.textContent = '-';
+            uploadStatus.classList.remove('active');
+            submitBtn.classList.remove('uploading');
+            loadingSpinner.classList.remove('active');
+            btnText.textContent = '上传图片';
+            submitBtn.disabled = false;
+        }
+
+        // 复制路径到剪贴板
+        copyPathBtn.addEventListener('click', async () => {
+            const path = resultFilePath.textContent;
+            try {
+                await navigator.clipboard.writeText(path);
+                showMessage('文件路径已复制到剪贴板', 'success', 2000);
+            } catch (err) {
+                showMessage('复制失败，请手动复制', 'error');
+            }
+        });
+
+        // 重置表单
+        resetFormBtn.addEventListener('click', () => {
+            uploadForm.reset();
+            uploadResult.classList.remove('active');
+            dropZone.querySelector('p').textContent = '拖放图片到这里或点击选择文件';
+            resetUploadStatus();
+            showMessage('可以开始新的上传', 'info', 2000);
+        });
+
+        // 显示上传结果
+        function showUploadResult(data) {
+            resultFileName.textContent = data.filename;
+            resultFilePath.textContent = data.path;
+            resultFileSize.textContent = formatFileSize(data.size);
+            resultFileType.textContent = data.type;
+            uploadResult.classList.add('active');
+            
+            // 滚动到结果面板
+            uploadResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // 显示成功消息
+            showMessage('文件上传成功！', 'success');
+        }
+
+        // 修改错误处理
+        function handleUploadError(error) {
+            let errorMessage = '上传失败';
+            
+            if (error.message.includes('unauthorized')) {
+                errorMessage = '未授权访问，请检查用户名和密码';
+            } else if (error.message.includes('network')) {
+                errorMessage = '网络错误，请检查网络连接';
+            } else if (error.message.includes('image files')) {
+                errorMessage = '只允许上传图片文件（JPG、PNG、GIF、WEBP、BMP、SVG）';
+            } else if (error.message.includes('required')) {
+                errorMessage = '请填写所有必填字段';
+            } else if (error.message.includes('too large')) {
+                errorMessage = '文件太大，请选择较小的文件';
+            } else {
+                errorMessage = error.message;
+            }
+            
+            showMessage(errorMessage, 'error');
+            uploadResult.classList.remove('active');
+        }
+
+        // 修改表单提交处理
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(uploadForm);
+            if (!formData.get('file').size) {
+                showMessage('请选择要上传的图片', 'error');
+                return;
+            }
+
+            try {
+                // 更新UI状态
+                submitBtn.disabled = true;
+                submitBtn.classList.add('uploading');
+                loadingSpinner.classList.add('active');
+                btnText.textContent = '上传中...';
+                uploadStatus.classList.add('active');
+                uploadResult.classList.remove('active');
+                progressBar.style.display = 'block';
+
+                const file = formData.get('file');
+                const startTime = Date.now();
+                
+                // 确保文件已经压缩
+                const compressedFile = await compressImage(file);
+                formData.set('file', compressedFile);
+
+                const xhr = new XMLHttpRequest();
+                
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percent = (e.loaded / e.total) * 100;
+                        progress.style.width = percent + '%';
+                        updateUploadStatus(compressedFile, e.loaded, e.total, startTime);
+                    }
+                });
+
+                const response = await new Promise((resolve, reject) => {
+                    xhr.open('POST', '/upload');
+                    xhr.onload = () => {
+                        if (xhr.status >= 200 && xhr.status < 300) {
+                            try {
+                                resolve(JSON.parse(xhr.response));
+                            } catch (e) {
+                                reject(new Error('服务器响应格式错误'));
+                            }
+                        } else {
+                            try {
+                                const error = JSON.parse(xhr.response);
+                                reject(new Error(error.error || '上传失败'));
+                            } catch (e) {
+                                reject(new Error(xhr.response || '上传失败'));
+                            }
+                        }
+                    };
+                    xhr.onerror = () => reject(new Error('网络错误，请检查网络连接'));
+                    xhr.send(formData);
+                });
+
+                showUploadResult(response);
+                uploadForm.reset();
+                dropZone.querySelector('p').textContent = '拖放图片到这里或点击选择文件';
+            } catch (error) {
+                handleUploadError(error);
+            } finally {
+                setTimeout(() => {
+                    resetUploadStatus();
+                    progressBar.style.display = 'none';
+                    progress.style.width = '0';
+                }, 1000);
+            }
+        });
+
+        function showMessage(text, type = 'info', duration = 6000) {
+            message.textContent = text;
+            message.className = `message ${type}`;
+            message.style.display = 'block';
+            
+            // 如果是错误消息，不自动隐藏
+            if (type !== 'error') {
+                setTimeout(() => {
+                    message.style.display = 'none';
+                }, duration);
+            }
+        }
+    </script>
+</body>
+</html>

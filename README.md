@@ -1,71 +1,158 @@
-# NewBearService
+中文 | **[English](README_EN.md)** | **[日本語](README_JA.md)** | **[한국어](README_KO.md)**
+# 反推（Pushback）推送服务适配
 
-
-
-> [!IMPORTANT]
-> ✨  程序思路和部分代码均来自 [BARK](https://github.com/Finb/bark-server)
+> **⚠️ 项目说明**
+> [DOCS](https://docs.uuneo.com/#/deploy)
+> 本项目参考了 [BARK](https://github.com/Finb/bark-server) —— 一个基于 Golang 的推送服务后端，重写了其接口并采用了 `Gin` 框架，便于扩展维护。
 >
-> ✨  一个基于golang的推送服务后端，主要用于推送消息给客户端。
->
-> ✨  重新实现了[BARK](https://github.com/Finb/bark-server)的接口，采用了gin框架，方便后续扩展。
+> 适用于服务端向 iOS 客户端推送通知，尤其适配 [反推](https://pushback.uuneo.com) App。
 
+---
 
+## ✨ 项目特点
 
-### 配置
+- 基于 Gin 实现，结构清晰
+- 支持 Docker 和 Docker Compose 部署
+- 提供 SQLite / MySQL 存储支持
+- 易于二次开发和集成
+- 内置健康检查和监控端点
+- 支持静默推送通知
+- 图片上传和管理功能
+
+---
+
+## 📦 配置说明
+
+配置文件 `config.yaml` 是可选的，系统将按以下顺序查找配置：
+1. `/data/config.yaml`
+2. `./config.yaml`
+3. 使用系统默认配置
 
 ```yaml
-system:
-  name: "NewBearService"
-  user: ""         # 用户名 非必填
-  password: ""    # 密码  非必填
-  host: "0.0.0.0"  # 服务监听地址
-  port: "8080"   # 服务监听端口 docker-compose中的端口映射必须与此端口一致
-  mode: "release"   # debug,release,test
-  dbType: "default" # default,mysql 
-  dbPath: "/data" # 数据库文件存放路径 
+system: # 系统配置
+  name: "pushback" # 服务名称
+  user: "" # 服务用户名
+  password: "" # 服务密码
+  address: "0.0.0.0:8080" # 服务监听地址
+  debug: false # 是否开启调试模式
+  dsn: "" # mysql user:password@tcp(host:port)
+  maxApnsClientCount: 1 # 最大APNs客户端连接数
 
-mysql: # 仅在 dbType: "mysql" 时有效
-  host: "localhost"
-  port: "3306"
-  user: "root"
-  password: "root"
-
-apple: # 复制项目中的配置，不需要修改，仅在自己编译app时需要修改
-  keyId:
-  teamId:
-  topic:
-  apnsPrivateKey:
-
+apple: # 苹果推送配置
+  keyId: "BNY5GUGV38" # 密钥ID
+  teamId: "FUWV6U942Q" # 团队ID
+  topic: "me.uuneo.Meoworld" # 推送主题
+  develop: false # 是否开发环境
+  apnsPrivateKey: |- # APNs私钥
+    -----BEGIN PRIVATE KEY-----
+    MIGTAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBHkwdwIBAQQgvjopbchDpzJNojnc
+    o7ErdZQFZM7Qxho6m61gqZuGVRigCgYIKoZIzj0DAQehRANCAAQ8ReU0fBNg+sA+
+    ZdDf3w+8FRQxFBKSD/Opt7n3tmtnmnl9Vrtw/nUXX4ldasxA2gErXR4YbEL9Z+uJ
+    REJP/5bp
+    -----END PRIVATE KEY-----
+  adminId: "" # 管理员ID
 ```
 
+---
 
-  ### 编译
- * 配置文件要保存在 /data/config.yaml，否则无法启动。
- * 把编译好的二进制文件和配置文件放到同一个目录下
+## 🔌 API 接口说明
 
-```shell
-  CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o  main  main.go || echo "编译linux版本失败"
+### 健康检查与信息
+- `GET /ping` 或 `GET /p` - 基础健康检查
+- `GET /health` 或 `GET /h` - 健康状态端点
+- `GET /info` - 系统信息（版本、构建日期等）
+
+### 设备管理
+- `POST /register` - 注册新设备
+- `GET /register/:deviceKey` - 使用密钥注册设备
+- `GET /:deviceKey/token` 或 `GET /:deviceKey/t` - 获取设备推送令牌
+
+### 推送通知
+- `POST /push` 或 `POST /p` - 发送推送通知
+- `GET /:deviceKey/:params1/:params2/:params3` - 推送标题、副标题、内容
+- `GET /:deviceKey/:params1/:params2` - 推送标题、内容
+- `GET /:deviceKey/:params1` - 仅推送内容
+- `GET /:deviceKey/update` 或 `GET /:deviceKey/u` - 发送静默推送
+
+### 媒体管理
+- `GET /upload` 或 `GET /u` - 上传界面
+- `POST /upload` 或 `POST /u` - 上传媒体
+- `GET /image/:filename` 或 `GET /img/:filename` - 获取已上传图片
+
+---
+
+## 🛠️ 安装方式
+
+### 方式一：直接下载（推荐）
+
+从 [GitHub Releases](https://github.com/uuneo/pushback-server/releases) 下载对应系统的最新版本：
+
+```bash
+# 下载并解压
+wget https://github.com/uuneo/pushback-server/releases/download/2.3.17/pushback-server_2.3.17_linux_amd64.tar.gz
+tar -xzf pushback-server_2.3.17_linux_amd64.tar.gz
+
+# 启动服务
+./pushback-server
 ```
-上传文件到服务器上，然后执行以下命令即可启动服务。
-```shell
-  ./main
+
+### 方式二：从源码编译
+
+确保你在 Linux 环境中构建，并放置可执行文件与配置文件在同一目录：
+
+```bash
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main main.go || echo "编译失败"
 ```
 
+启动：
 
-
-
-## Docker部署
-```shell
-  docker run -d --name alarm-paw-server -p 8080:8080 -v ./data:/data  --restart=always  thurmantsao/alarm-paw-server:latest
+```bash
+./main
 ```
 
-## Docker-compose部署
-* 复制项目中的/deploy文件夹到服务器上，然后执行以下命令即可。
-* 必须有/data/config.yaml 的配置文件，否则无法启动，文件中的配置项，可以根据自己的需求进行修改。
+---
 
-### 启动
-```shell
-  docker-compose up -d
+## 🐳 Docker 部署
+
+你可以使用如下命令快速部署：
+
+```bash
+docker run -d --name pushback-server \
+  -p 8080:8080 \
+  -v ./data:/data \
+  --restart=always \
+  sunvx/pushback:latest
 ```
 
+或使用 GitHub Container Registry 镜像：
 
+```bash
+docker run -d --name pushback-server \
+  -p 8080:8080 \
+  -v ./data:/data \
+  --restart=always \
+  ghcr.io/uuneo/pushback:latest
+```
+
+---
+
+## 🐳 Docker Compose 部署
+
+* 将项目中的 `/deploy` 文件夹复制到服务器。
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## 📎 参考项目
+
+- [BARK](https://github.com/Finb/bark-server) - 推送服务原始实现
+- [Gin](https://github.com/gin-gonic/gin) - Web 框架
+
+---
+
+## 📮 联系与支持
+
+如需帮助或想了解更多，可通过 issue 区或邮箱联系维护者。欢迎 PR！
