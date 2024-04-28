@@ -21,7 +21,6 @@ const (
 	Body             = "body"                   // 内容
 	IsArchive        = "isarchive"              // 是否归档
 	Group            = "group"                  // 组
-	DefaultGroup     = "Default"                // 默认组
 	Sound            = "sound"                  // 声音
 	AutoCopy         = "autocopy"               // 自动复制
 	Level            = "level"                  // 等级

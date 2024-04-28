@@ -34,9 +34,6 @@ func Push(params map[string]string) error {
 
 	if group := config.VerifyMap(params, config.Group); group != "" {
 		pl = pl.ThreadID(group)
-	} else {
-		pl = pl.ThreadID(config.DefaultGroup)
-		params[config.Group] = config.DefaultGroup
 	}
 
 	resp, err := CLI.Push(&apns2.Notification{
