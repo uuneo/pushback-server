@@ -24,6 +24,7 @@ const (
 	Sound            = "sound"                  // 声音
 	AutoCopy         = "autocopy"               // 自动复制
 	Level            = "level"                  // 等级
+	CipherText       = "ciphertext"             // 密文
 )
 
 const (

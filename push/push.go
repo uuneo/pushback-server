@@ -27,6 +27,7 @@ func Push(params map[string]string) error {
 			k == config.Category {
 			continue
 		}
+		fmt.Println(k, v)
 
 		pl.Custom(k, v)
 

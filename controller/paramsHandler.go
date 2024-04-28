@@ -84,5 +84,9 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 		}
 	}
 
+	if config.VerifyMap(paramsResult, config.Body) == "" {
+		paramsResult[config.Body] = "-No Content-"
+	}
+
 	return paramsResult, nil
 }
