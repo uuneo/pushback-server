@@ -4,6 +4,7 @@ type Config struct {
 	System System `mapstructure:"system" json:"system" yaml:"system"`
 	Mysql  Mysql  `mapstructure:"mysql" json:"mysql" yaml:"mysql"`
 	Apple  Apple  `mapstructure:"apple" json:"apple" yaml:"apple"`
+	Email  Email  `mapstructure:"email" json:"email" yaml:"email"`
 }
 
 type System struct {
@@ -30,4 +31,13 @@ type Apple struct {
 	KeyID          string `mapstructure:"keyID" json:"keyID" yaml:"keyID"`
 	TeamID         string `mapstructure:"teamID" json:"teamID" yaml:"teamID"`
 	Develop        bool   `mapstructure:"develop" json:"develop" yaml:"develop"`
+}
+
+type Email struct {
+	SmtpHost   string `mapstructure:"smtpHost" json:"smtpHost" yaml:"smtpHost"`
+	SmtpPort   int    `mapstructure:"smtpPort" json:"smtpPort" yaml:"smtpPort"`
+	From       string `mapstructure:"from" json:"from" yaml:"from"`
+	Password   string `mapstructure:"password" json:"password" yaml:"password"`
+	Subject    string `mapstructure:"subject" json:"subject" yaml:"subject"`
+	BodySuffix string `mapstructure:"bodySuffix" json:"bodySuffix" yaml:"bodySuffix"`
 }

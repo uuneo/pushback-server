@@ -2,6 +2,7 @@ package database
 
 import (
 	"NewBearService/config"
+	"errors"
 	"fmt"
 	"github.com/lithammer/shortuuid/v3"
 	"go.etcd.io/bbolt"
@@ -82,6 +83,27 @@ func (d *BboltDB) SaveDeviceTokenByKey(key, deviceToken string) (string, error) 
 	return key, nil
 }
 
+func (d *BboltDB) SaveDeviceTokenByEmail(email, key, deviceToken string) (string, error) {
+	err := BBDB.Update(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket([]byte(config.LocalConfig.System.Name))
+
+		if email == "" {
+			return errors.New("email is empty")
+		}
+
+		// 删除 key
+		_ = bucket.DeleteBucket([]byte(key))
+
+		return bucket.Put([]byte(email), []byte(deviceToken))
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return email, nil
+}
+
 // bboltSetup set up the bbolt database
 func bboltSetup(dataDir string) {
 	dbOnce.Do(func() {
@@ -99,12 +121,13 @@ func bboltSetup(dataDir string) {
 			log.Fatalf("failed to create database file(%s): %v", filepath.Join(dataDir, "bark.db"), err)
 		}
 		err = bboltDB.Update(func(tx *bbolt.Tx) error {
-			_, err := tx.CreateBucketIfNotExists([]byte(config.LocalConfig.System.Name))
+			_, err = tx.CreateBucketIfNotExists([]byte(config.LocalConfig.System.Name))
 			return err
 		})
 		if err != nil {
 			log.Fatalf("failed to create database bucket: %v", err)
 		}
+
 		BBDB = bboltDB
 	})
 }

@@ -17,7 +17,6 @@ func main() {
 
 	router.POST("/register", controller.RegisterController)
 	router.GET("/register", controller.RegisterController)
-
 	router.GET("/register/:deviceToken", controller.RegisterController)
 	router.GET("/register/:deviceToken/:deviceKey", controller.RegisterController)
 	router.GET("/info", controller.GetInfo).Use(Auth())
@@ -33,6 +32,13 @@ func main() {
 	router.POST("/:deviceKey/:params1/:params2/:params3", controller.BaseController).Use(Auth())
 	router.GET("/registerPush", controller.RegisterPush)
 	router.GET("/callback/:pushId", controller.CallbackController)
+
+	{
+		router.GET("/sendCode", controller.SendCode)
+		router.GET("/keyWithEmail", controller.VerifyCode)
+
+		router.GET("/server", controller.QRCode)
+	}
 
 	addr := config.LocalConfig.System.Host + ":" + config.LocalConfig.System.Post
 	if err := router.Run(addr); err != nil {

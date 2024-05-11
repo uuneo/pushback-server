@@ -79,3 +79,17 @@ func (d *MySQL) SaveDeviceTokenByKey(key, token string) (string, error) {
 func (d *MySQL) Close() error {
 	return mysqlDB.Close()
 }
+
+func (d *MySQL) SaveDeviceTokenByEmail(email, key, token string) (string, error) {
+	if email == "" {
+		return "", fmt.Errorf("email is empty")
+	}
+	rawString := fmt.Sprintf("INSERT INTO `%s` (`key`,`token`) VALUES (?,?) ON DUPLICATE KEY UPDATE `token`=?", config.LocalConfig.System.Name)
+
+	_, err := mysqlDB.Exec(rawString, email, token, token)
+	if err != nil {
+		return "", err
+	}
+
+	return email, nil
+}
