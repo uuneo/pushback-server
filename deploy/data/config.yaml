@@ -27,3 +27,10 @@ apple: # 苹果推送配置
     REJP/5bp
     -----END PRIVATE KEY-----
 
+email: # 邮件配置
+  smtpHost: "smtp.qq.com"
+  smtpPort: "587"
+  from: "newbear@twown.com"
+  password: "abcdefghijklmn"
+  subject: "NewBear 邮件验证"
+  bodySuffix: " 是 NewBear App邮件验证码，请在 3 分钟内完成验证。"

@@ -2,7 +2,7 @@ version: '3'
 
 services:
   NewBearService:
-    image: thurmantsao/alarm-paw-server
+    image: uuneo/newbear:latest
     container_name: NewBearService
     restart: always
     ports:
