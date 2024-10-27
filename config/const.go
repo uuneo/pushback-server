@@ -29,8 +29,8 @@ const (
 
 const (
 	FilePathEnv     = "PUSHBACK_CONFIG"
-	DefaultFilePath = "./config/config.yaml"
-	TestFilePath    = "./config/config.test.yaml"
+	DefaultFilePath = "./data/config.yaml"
+	TestFilePath    = "./data/config.yaml"
 	ReleaseFilePath = "./data/config.yaml"
 )
 
