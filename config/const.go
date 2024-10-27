@@ -2,7 +2,7 @@ package config
 
 import "github.com/spf13/viper"
 
-// URL > QUERY > POST
+// URL > QUERY > POST > BODY
 
 const (
 	LevelA = "active"
@@ -29,9 +29,9 @@ const (
 
 const (
 	FilePathEnv     = "PUSHBACK_CONFIG"
-	DefaultFilePath = "./data/config.yaml"
-	TestFilePath    = "./data/config.yaml"
-	ReleaseFilePath = "./data/config.yaml"
+	DefaultFilePath = "/data/config.yaml"
+	TestFilePath    = "/data/config.yaml"
+	ReleaseFilePath = "/data/config.yaml"
 )
 
 var (
