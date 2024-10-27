@@ -28,10 +28,10 @@ const (
 )
 
 const (
-	FilePathEnv     = "ALARM_PAW_CONFIG"
+	FilePathEnv     = "PUSHBACK_CONFIG"
 	DefaultFilePath = "./config/config.yaml"
 	TestFilePath    = "./config/config.test.yaml"
-	ReleaseFilePath = "./config/config.release.yaml"
+	ReleaseFilePath = "./data/config.yaml"
 )
 
 var (
