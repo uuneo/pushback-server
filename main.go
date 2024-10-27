@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"pushbackServer/config"
 	"pushbackServer/controller"
-	"pushbackServer/database"
 )
 
 func main() {
@@ -14,42 +13,25 @@ func main() {
 	router := gin.Default()
 	router.GET("/health", func(c *gin.Context) { c.JSON(http.StatusOK, "ok") })
 	router.GET("/ping", controller.Ping)
-
 	router.GET("/server", controller.QRCode)
-
-	router.GET("/register/:deviceToken/:deviceKey", controller.RegisterController)
-	router.GET("/register/:deviceToken", controller.RegisterController)
 	router.POST("/register", controller.RegisterController)
-	router.GET("/register", controller.RegisterController)
-
 	router.GET("/info", controller.GetInfo).Use(Auth())
 	router.POST("/push", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey/:params1/:params2/:params3", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey/:params1", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey", controller.BaseController).Use(Auth())
-	router.GET("/change", controller.ChangeKeyHandler)
+	router.POST("/change", controller.ChangeKeyHandler).Use(Auth())
 
+	router.GET("/:deviceKey/:params1/:params2/:params3", controller.BaseController).Use(Auth())
 	router.POST("/:deviceKey/:params1/:params2/:params3", controller.BaseController).Use(Auth())
+	router.GET("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
 	router.POST("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
+	router.GET("/:deviceKey/:params1", controller.BaseController).Use(Auth())
 	router.POST("/:deviceKey/:params1", controller.BaseController).Use(Auth())
+	router.GET("/:deviceKey", controller.BaseController).Use(Auth())
 	router.POST("/:deviceKey", controller.BaseController).Use(Auth())
 
 	addr := config.LocalConfig.System.Host + ":" + config.LocalConfig.System.Post
 	if err := router.Run(addr); err != nil {
 		panic(err)
 	}
-}
-
-func init() {
-	switch config.LocalConfig.System.DBType {
-	case "mysql":
-		database.DB = database.NewMySQL(config.GetDsn())
-	default:
-		database.DB = database.NewBboltdb(config.LocalConfig.System.DBPath)
-
-	}
-
 }
 
 func Auth() gin.HandlerFunc {

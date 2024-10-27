@@ -2,8 +2,6 @@ package controller
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"github.com/skip2/go-qrcode"
 	"time"
 )
 
@@ -42,15 +40,13 @@ func data(data interface{}) CommonResp {
 	}
 }
 
-// QRCode - generate QRCode
+type DeviceInfo struct {
+	Key   string `json:"key"`
+	Token string `json:"token"`
+}
 
-func QRCode(c *gin.Context) {
-	url := "https://push.twown.com"
-	var png []byte
-	png, err := qrcode.Encode(url, qrcode.Medium, 256)
-	if err != nil {
-		c.JSON(200, "生成二维码失败")
-		return
-	}
-	_, _ = c.Writer.Write(png)
+type ChangeKeyInfo struct {
+	OldKey      string `json:"oldKey"`
+	NewKey      string `json:"newKey"`
+	DeviceToken string `json:"deviceToken"`
 }

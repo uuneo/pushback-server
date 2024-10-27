@@ -2,7 +2,7 @@ package config
 
 import "github.com/spf13/viper"
 
-// URL > QUERY > POST > BODY
+// URL > QUERY > POST
 
 const (
 	LevelA = "active"
@@ -27,11 +27,18 @@ const (
 	CipherText       = "ciphertext"             // 密文
 )
 
+//const (
+//	FilePathEnv     = "PUSHBACK_CONFIG"
+//	DefaultFilePath = "/data/config.yaml"
+//	TestFilePath    = "/data/config.yaml"
+//	ReleaseFilePath = "/data/config.yaml"
+//)
+
 const (
 	FilePathEnv     = "PUSHBACK_CONFIG"
-	DefaultFilePath = "/data/config.yaml"
-	TestFilePath    = "/data/config.yaml"
-	ReleaseFilePath = "/data/config.yaml"
+	DefaultFilePath = "./config/config.yaml"
+	TestFilePath    = "./config/config.yaml"
+	ReleaseFilePath = "./config/config.yaml"
 )
 
 var (

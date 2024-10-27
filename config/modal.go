@@ -16,6 +16,7 @@ type System struct {
 	Mode     string `mapstructure:"mode" json:"mode" yaml:"mode"`
 	DBType   string `mapstructure:"dbType" json:"dbType" yaml:"dbType"`
 	DBPath   string `mapstructure:"dbPath" json:"dbPath" yaml:"dbPath"`
+	HostName string `mapstructure:"hostName" json:"hostName" yaml:"hostName"`
 }
 
 type Mysql struct {

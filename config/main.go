@@ -6,6 +6,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"log"
 	"os"
 	"strings"
 )
@@ -56,16 +57,7 @@ func init() {
 		fmt.Println(err)
 	}
 
-}
-
-func GetDsn() string {
-	return LocalConfig.Mysql.Host + ":" +
-		LocalConfig.Mysql.Port +
-		"@tcp(" +
-		LocalConfig.Mysql.Host + ":" +
-		LocalConfig.Mysql.Port + ")/" +
-		LocalConfig.System.Name +
-		"?charset=utf8mb4&parseTime=True&loc=Local"
+	log.Println("configTem file loaded successfully")
 }
 
 func VerifyMap(data map[string]string, key string) string {

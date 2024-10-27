@@ -8,35 +8,24 @@ import (
 	"time"
 )
 
-// Push  message to apns server
+// Push message to APNs server
 func Push(params map[string]string, pushType apns2.EPushType) error {
-
+	// 创建 payload，并填充通知标题、内容、声音和类别等字段
 	pl := payload.NewPayload().
 		AlertTitle(config.VerifyMap(params, config.Title)).
 		AlertBody(config.VerifyMap(params, config.Body)).
 		Sound(config.VerifyMap(params, config.Sound)).
 		Category(config.VerifyMap(params, config.Category))
 
-	for k, v := range params {
-		k = config.UnifiedParameter(k)
-		if k == config.DeviceKey ||
-			k == config.DeviceToken ||
-			k == config.Title ||
-			k == config.Body ||
-			k == config.Sound ||
-			k == config.Category {
-			continue
-		}
-		fmt.Println(k, v)
+	// 添加自定义参数
+	addCustomParams(pl, params)
 
-		pl.Custom(k, v)
-
-	}
-
+	// 设置通知组（线程 ID）
 	if group := config.VerifyMap(params, config.Group); group != "" {
 		pl = pl.ThreadID(group)
 	}
 
+	// 创建并发送通知
 	resp, err := CLI.Push(&apns2.Notification{
 		DeviceToken: params[config.DeviceToken],
 		Topic:       config.LocalConfig.Apple.Topic,
@@ -45,11 +34,34 @@ func Push(params map[string]string, pushType apns2.EPushType) error {
 		PushType:    pushType,
 	})
 
+	// 错误处理
 	if err != nil {
 		return err
 	}
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("APNS push failed: %s", resp.Reason)
+		return fmt.Errorf("APNs push failed: %s", resp.Reason)
 	}
 	return nil
+}
+
+// addCustomParams 添加自定义字段到 payload
+func addCustomParams(pl *payload.Payload, params map[string]string) {
+	// 定义需要跳过的关键字段
+	skipKeys := map[string]struct{}{
+		config.DeviceKey:   {},
+		config.DeviceToken: {},
+		config.Title:       {},
+		config.Body:        {},
+		config.Sound:       {},
+		config.Category:    {},
+	}
+
+	for k, v := range params {
+		k = config.UnifiedParameter(k)
+		if _, skip := skipKeys[k]; skip {
+			continue
+		}
+		fmt.Println("Custom parameter added:", k, v)
+		pl.Custom(k, v)
+	}
 }

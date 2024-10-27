@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/sideshow/apns2"
+	"github.com/skip2/go-qrcode"
 	"net/http"
 	"pushbackServer/config"
 	"pushbackServer/database"
@@ -13,23 +14,59 @@ import (
 	"time"
 )
 
-func Ping(c *gin.Context) {
-	c.JSON(http.StatusOK, CommonResp{
-		Code:      200,
-		Message:   "pong",
-		Timestamp: time.Now().Unix(),
-	})
+func RegisterController(c *gin.Context) {
+	var err error
+	var device DeviceInfo
+
+	if err = c.BindJSON(&device); err != nil {
+		c.JSON(http.StatusOK, failed(400, "failed to get device token: %v", err))
+		return
+	}
+
+	if device.Token == "" {
+		c.JSON(http.StatusOK, failed(400, "deviceToken is empty"))
+		return
+	}
+
+	device.Key, err = database.DB.SaveDeviceTokenByKey(device.Key, device.Token)
+
+	if err != nil {
+		c.JSON(http.StatusOK, failed(500, "device registration failed: %v", err))
+	}
+
+	c.JSON(http.StatusOK, device)
 }
 
-func GetInfo(c *gin.Context) {
-	devices, _ := database.DB.CountAll()
-	c.JSON(200, map[string]interface{}{
-		"version": "1.0.0",
-		"build":   "",
-		"arch":    runtime.GOOS + "/" + runtime.GOARCH,
-		"commit":  "",
-		"devices": devices,
-	})
+func ChangeKeyHandler(c *gin.Context) {
+
+	var device ChangeKeyInfo
+
+	if err := c.BindJSON(&device); err != nil {
+		c.JSON(http.StatusOK, failed(400, "failed to get device token: %v", err))
+		return
+	}
+
+	if device.DeviceToken == "" {
+		c.JSON(http.StatusOK, failed(400, "deviceToken is empty"))
+		return
+	}
+
+	if len(device.NewKey) < 3 {
+		c.JSON(http.StatusOK, failed(400, "newKey is too short"))
+		return
+	}
+
+	if database.DB.KeyExists(device.OldKey) && !database.DB.KeyExists(device.NewKey) {
+		_, err := database.DB.SaveDeviceTokenByKey(device.NewKey, device.DeviceToken)
+		if err != nil {
+			c.JSON(http.StatusOK, failed(500, "device registration failed: %v", err))
+			return
+		}
+		c.JSON(http.StatusOK, data(device))
+
+	} else {
+		c.JSON(http.StatusOK, failed(400, "deviceKey or newKey is invalid"))
+	}
 
 }
 
@@ -49,69 +86,6 @@ func BaseController(c *gin.Context) {
 
 	c.JSON(http.StatusOK, success())
 
-}
-
-func RegisterController(c *gin.Context) {
-	var deviceKey, deviceToken string
-
-	for _, v := range c.Params {
-		paramsKey := config.UnifiedParameter(v.Key)
-		if paramsKey == config.DeviceKey {
-			deviceKey = v.Value
-		} else if paramsKey == config.DeviceToken {
-			deviceToken = v.Value
-		}
-	}
-
-	for k, v := range c.Request.URL.Query() {
-		paramsKey := config.UnifiedParameter(k)
-		if paramsKey == config.DeviceKey && deviceKey == "" {
-			deviceKey = v[0]
-		} else if paramsKey == config.DeviceToken && deviceToken == "" {
-			deviceToken = v[0]
-		}
-	}
-
-	if c.Request.Method == "POST" {
-		for k, v := range c.Request.PostForm {
-			paramsKey := config.UnifiedParameter(k)
-			if paramsKey == config.DeviceKey && deviceKey == "" {
-				deviceKey = v[0]
-			} else if paramsKey == config.DeviceToken && deviceToken == "" {
-				deviceToken = v[0]
-			}
-		}
-	}
-
-	if c.Request.Method == "POST" {
-		err := c.Request.ParseForm() // 确保解析表单数据
-		if err == nil {
-			for k, v := range c.Request.PostForm {
-				paramsKey := config.UnifiedParameter(k)
-				if paramsKey == config.DeviceKey && deviceKey == "" {
-					deviceKey = v[0]
-				} else if paramsKey == config.DeviceToken && deviceToken == "" {
-					deviceToken = v[0]
-				}
-			}
-		}
-
-	}
-
-	if deviceToken == "" {
-		c.JSON(http.StatusOK, failed(400, "deviceToken is empty"))
-		return
-	}
-
-	newKey, err := database.DB.SaveDeviceTokenByKey(deviceKey, deviceToken)
-	if err != nil {
-		c.JSON(http.StatusOK, failed(500, "device registration failed: %v", err))
-	}
-
-	c.JSON(http.StatusOK, data(map[string]string{
-		"key":   newKey,
-		"token": deviceToken,
-	}))
 }
 
 func ToParamsHandler(c *gin.Context) (map[string]string, error) {
@@ -193,35 +167,33 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 	return paramsResult, nil
 }
 
-func ChangeKeyHandler(c *gin.Context) {
-
-	oldKey := c.Query("oldKey")
-	newKey := c.Query("newKey")
-	deviceToken := c.Query("deviceToken")
-
-	if deviceToken == "" {
-		c.JSON(http.StatusOK, failed(400, "deviceToken is empty"))
+func QRCode(c *gin.Context) {
+	url := config.LocalConfig.System.HostName
+	var png []byte
+	png, err := qrcode.Encode(url, qrcode.Medium, 256)
+	if err != nil {
+		c.JSON(200, "生成二维码失败")
 		return
 	}
+	_, _ = c.Writer.Write(png)
+}
 
-	if len(newKey) < 3 {
-		c.JSON(http.StatusOK, failed(400, "newKey is too short"))
-		return
-	}
+func Ping(c *gin.Context) {
+	c.JSON(http.StatusOK, CommonResp{
+		Code:      200,
+		Message:   "pong",
+		Timestamp: time.Now().Unix(),
+	})
+}
 
-	if database.DB.KeyExists(oldKey) && !database.DB.KeyExists(newKey) {
-		_, err := database.DB.SaveDeviceTokenByKey(newKey, deviceToken)
-		if err != nil {
-			c.JSON(http.StatusOK, failed(500, "device registration failed: %v", err))
-			return
-		}
-		c.JSON(http.StatusOK, data(map[string]string{
-			"key":   newKey,
-			"token": deviceToken,
-		}))
-
-	} else {
-		c.JSON(http.StatusOK, failed(400, "deviceKey or newKey is invalid"))
-	}
+func GetInfo(c *gin.Context) {
+	devices, _ := database.DB.CountAll()
+	c.JSON(200, map[string]interface{}{
+		"version": "1.0.0",
+		"build":   "",
+		"arch":    runtime.GOOS + "/" + runtime.GOARCH,
+		"commit":  "",
+		"devices": devices,
+	})
 
 }
