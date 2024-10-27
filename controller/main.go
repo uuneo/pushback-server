@@ -195,9 +195,9 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 
 func ChangeKeyHandler(c *gin.Context) {
 
-	oldKey := c.Param("oldKey")
-	newKey := c.Param("newKey")
-	deviceToken := c.Param("deviceToken")
+	oldKey := c.Query("oldKey")
+	newKey := c.Query("newKey")
+	deviceToken := c.Query("deviceToken")
 
 	if deviceToken == "" {
 		c.JSON(http.StatusOK, failed(400, "deviceToken is empty"))
