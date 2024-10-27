@@ -1,14 +1,13 @@
 package database
 
 import (
-	"NewBearService/config"
-	"errors"
 	"fmt"
 	"github.com/lithammer/shortuuid/v3"
 	"go.etcd.io/bbolt"
 	"log"
 	"os"
 	"path/filepath"
+	"pushbackServer/config"
 	"sync"
 )
 
@@ -64,14 +63,12 @@ func (d *BboltDB) DeviceTokenByKey(key string) (string, error) {
 func (d *BboltDB) SaveDeviceTokenByKey(key, deviceToken string) (string, error) {
 	err := BBDB.Update(func(tx *bbolt.Tx) error {
 		bucket := tx.Bucket([]byte(config.LocalConfig.System.Name))
-
 		// If the deviceKey is empty or the corresponding deviceToken cannot be obtained from the database,
 		// it is considered as a new device registration
 		if key == "" || bucket.Get([]byte(key)) == nil {
 			// Generate a new UUID as the deviceKey when a new device register
 			key = shortuuid.New()
 		}
-
 		// update the deviceToken
 		return bucket.Put([]byte(key), []byte(deviceToken))
 	})
@@ -81,27 +78,6 @@ func (d *BboltDB) SaveDeviceTokenByKey(key, deviceToken string) (string, error) 
 	}
 
 	return key, nil
-}
-
-func (d *BboltDB) SaveDeviceTokenByEmail(email, key, deviceToken string) (string, error) {
-	err := BBDB.Update(func(tx *bbolt.Tx) error {
-		bucket := tx.Bucket([]byte(config.LocalConfig.System.Name))
-
-		if email == "" {
-			return errors.New("email is empty")
-		}
-
-		// 删除 key
-		_ = bucket.DeleteBucket([]byte(key))
-
-		return bucket.Put([]byte(email), []byte(deviceToken))
-	})
-
-	if err != nil {
-		return "", err
-	}
-
-	return email, nil
 }
 
 // bboltSetup set up the bbolt database
@@ -130,4 +106,22 @@ func bboltSetup(dataDir string) {
 
 		BBDB = bboltDB
 	})
+}
+
+// KeyExists 检查指定的 key 是否存在于数据库中，只返回 bool 值
+func (d *BboltDB) KeyExists(key string) bool {
+	err := BBDB.View(func(tx *bbolt.Tx) error {
+		bucket := tx.Bucket([]byte(config.LocalConfig.System.Name))
+		if bucket == nil {
+			return fmt.Errorf("bucket %s not found", config.LocalConfig.System.Name)
+		}
+		// 检查 key 是否存在
+		if bucket.Get([]byte(key)) != nil {
+			return nil // key 存在，返回 nil 表示没有错误
+		}
+		return fmt.Errorf("key not found") // key 不存在，返回错误
+	})
+
+	// 如果 err 为 nil，说明 key 存在，否则 key 不存在
+	return err == nil
 }

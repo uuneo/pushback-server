@@ -1,11 +1,11 @@
 package database
 
 import (
-	"NewBearService/config"
 	"database/sql"
 	"fmt"
 	"github.com/lithammer/shortuuid/v3"
 	"log"
+	"pushbackServer/config"
 )
 
 type MySQL struct {
@@ -80,16 +80,14 @@ func (d *MySQL) Close() error {
 	return mysqlDB.Close()
 }
 
-func (d *MySQL) SaveDeviceTokenByEmail(email, key, token string) (string, error) {
-	if email == "" {
-		return "", fmt.Errorf("email is empty")
-	}
-	rawString := fmt.Sprintf("INSERT INTO `%s` (`key`,`token`) VALUES (?,?) ON DUPLICATE KEY UPDATE `token`=?", config.LocalConfig.System.Name)
-
-	_, err := mysqlDB.Exec(rawString, email, token, token)
+func (d *MySQL) KeyExists(key string) bool {
+	var exists bool
+	rawString := fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM `%s` WHERE `key`=?)", config.LocalConfig.System.Name)
+	err := mysqlDB.QueryRow(rawString, key).Scan(&exists)
 	if err != nil {
-		return "", err
+		log.Printf("failed to check key existence: %v", err)
+		return false
 	}
 
-	return email, nil
+	return exists
 }

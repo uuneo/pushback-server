@@ -1,15 +1,15 @@
 package push
 
 import (
-	"NewBearService/config"
 	"fmt"
 	"github.com/sideshow/apns2"
 	"github.com/sideshow/apns2/payload"
+	"pushbackServer/config"
 	"time"
 )
 
 // Push  message to apns server
-func Push(params map[string]string) error {
+func Push(params map[string]string, pushType apns2.EPushType) error {
 
 	pl := payload.NewPayload().
 		AlertTitle(config.VerifyMap(params, config.Title)).
@@ -42,6 +42,7 @@ func Push(params map[string]string) error {
 		Topic:       config.LocalConfig.Apple.Topic,
 		Payload:     pl.MutableContent(),
 		Expiration:  time.Now().Add(24 * time.Hour),
+		PushType:    pushType,
 	})
 
 	if err != nil {

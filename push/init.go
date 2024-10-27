@@ -1,14 +1,16 @@
 package push
 
 import (
-	"NewBearService/config"
 	"crypto/tls"
 	"crypto/x509"
 	"github.com/sideshow/apns2"
 	"github.com/sideshow/apns2/token"
+	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"log"
+	"net"
 	"net/http"
+	"pushbackServer/config"
 	"runtime"
 )
 
@@ -47,7 +49,7 @@ func init() {
 		},
 		HTTPClient: &http.Client{
 			Transport: &http2.Transport{
-				DialTLS: apns2.DialTLS,
+				DialTLSContext: DialTLSContext,
 				TLSClientConfig: &tls.Config{
 					RootCAs: rootCAs,
 				},
@@ -65,4 +67,18 @@ func selectPushMode() string {
 	} else {
 		return apns2.HostProduction
 	}
+}
+
+func DialTLSContext(context context.Context, network, addr string, cfg *tls.Config) (net.Conn, error) {
+
+	dialer := &tls.Dialer{
+		NetDialer: &net.Dialer{
+			Timeout:   apns2.TLSDialTimeout,
+			KeepAlive: apns2.TCPKeepAlive,
+		},
+		Config: cfg,
+	}
+
+	return dialer.DialContext(context, network, addr)
+
 }

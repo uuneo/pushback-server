@@ -1,11 +1,11 @@
 package main
 
 import (
-	"NewBearService/config"
-	"NewBearService/controller"
-	"NewBearService/database"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"pushbackServer/config"
+	"pushbackServer/controller"
+	"pushbackServer/database"
 )
 
 func main() {
@@ -15,30 +15,25 @@ func main() {
 	router.GET("/health", func(c *gin.Context) { c.JSON(http.StatusOK, "ok") })
 	router.GET("/ping", controller.Ping)
 
+	router.GET("/server", controller.QRCode)
+
+	router.GET("/register/:deviceToken/:deviceKey", controller.RegisterController)
+	router.GET("/register/:deviceToken", controller.RegisterController)
 	router.POST("/register", controller.RegisterController)
 	router.GET("/register", controller.RegisterController)
-	router.GET("/register/:deviceToken", controller.RegisterController)
-	router.GET("/register/:deviceToken/:deviceKey", controller.RegisterController)
+
 	router.GET("/info", controller.GetInfo).Use(Auth())
 	router.POST("/push", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey/:params1", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
 	router.GET("/:deviceKey/:params1/:params2/:params3", controller.BaseController).Use(Auth())
+	router.GET("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
+	router.GET("/:deviceKey/:params1", controller.BaseController).Use(Auth())
+	router.GET("/:deviceKey", controller.BaseController).Use(Auth())
+	router.GET("/change", controller.ChangeKeyHandler)
 
-	router.POST("/:deviceKey", controller.BaseController).Use(Auth())
-	router.POST("/:deviceKey/:params1", controller.BaseController).Use(Auth())
-	router.POST("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
 	router.POST("/:deviceKey/:params1/:params2/:params3", controller.BaseController).Use(Auth())
-	router.GET("/registerPush", controller.RegisterPush)
-	router.GET("/callback/:pushId", controller.CallbackController)
-
-	{
-		router.GET("/sendCode", controller.SendCode)
-		router.GET("/keyWithEmail", controller.VerifyCode)
-
-		router.GET("/server", controller.QRCode)
-	}
+	router.POST("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
+	router.POST("/:deviceKey/:params1", controller.BaseController).Use(Auth())
+	router.POST("/:deviceKey", controller.BaseController).Use(Auth())
 
 	addr := config.LocalConfig.System.Host + ":" + config.LocalConfig.System.Post
 	if err := router.Run(addr); err != nil {

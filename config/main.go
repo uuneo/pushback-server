@@ -7,7 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
+
+const formatConfigNameString = "The environment name you are using in gin mode is %s, and the path to the config is %s\n"
 
 func init() {
 	var configTem string
@@ -18,17 +21,17 @@ func init() {
 			switch gin.Mode() {
 			case gin.DebugMode:
 				configTem = DefaultFilePath
-				fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.DebugMode, configTem)
+				fmt.Printf(formatConfigNameString, gin.DebugMode, configTem)
 			case gin.ReleaseMode:
 				configTem = ReleaseFilePath
-				fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.ReleaseMode, configTem)
+				fmt.Printf(formatConfigNameString, gin.ReleaseMode, configTem)
 			case gin.TestMode:
 				configTem = TestFilePath
-				fmt.Printf("您正在使用gin模式的%s环境名称,config的路径为%s\n", gin.TestMode, configTem)
+				fmt.Printf(formatConfigNameString, gin.TestMode, configTem)
 			}
 		} else { // internal.FilePathEnv 常量存储的环境变量不为空 将值赋值于config
 			configTem = configEnv
-			fmt.Printf("您正在使用%s环境变量,config的路径为%s\n", FilePathEnv, configTem)
+			fmt.Printf(formatConfigNameString, FilePathEnv, configTem)
 		}
 	} else { // 命令行参数不为空 将值赋值于config
 		fmt.Printf("您正在使用命令行的-c参数传递的值,config的路径为%s\n", configTem)
@@ -53,4 +56,25 @@ func init() {
 		fmt.Println(err)
 	}
 
+}
+
+func GetDsn() string {
+	return LocalConfig.Mysql.Host + ":" +
+		LocalConfig.Mysql.Port +
+		"@tcp(" +
+		LocalConfig.Mysql.Host + ":" +
+		LocalConfig.Mysql.Port + ")/" +
+		LocalConfig.System.Name +
+		"?charset=utf8mb4&parseTime=True&loc=Local"
+}
+
+func VerifyMap(data map[string]string, key string) string {
+	if value, ok := data[key]; ok {
+		return value
+	}
+	return ""
+}
+
+func UnifiedParameter(input string) string {
+	return strings.ToLower(strings.TrimSpace(input))
 }

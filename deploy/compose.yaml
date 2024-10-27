@@ -2,8 +2,8 @@ version: '3'
 
 services:
   NewBearService:
-    image: uuneo/newbear:latest
-    container_name: NewBearService
+    image: uuneo/pushback:latest
+    container_name: PushbackServer
     restart: always
     ports:
       - "8080:8080"

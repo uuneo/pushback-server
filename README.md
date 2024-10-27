@@ -1,4 +1,4 @@
-# NewBearService
+# PushbackService
 
 
 
@@ -21,8 +21,8 @@ system:
   host: "0.0.0.0"  # 服务监听地址
   port: "8080"   # 服务监听端口 docker-compose中的端口映射必须与此端口一致
   mode: "release"   # debug,release,test
-  dbType: "default" # default,mysql 
-  dbPath: "/data" # 数据库文件存放路径 
+  dbType: "default" # default,mysql
+  dbPath: "/data" # 数据库文件存放路径
 
 mysql: # 仅在 dbType: "mysql" 时有效
   host: "localhost"
