@@ -1,5 +1,5 @@
 system: # 系统配置
-  name: "NewBear" # 服务名称
+  name: "Pushback" # 服务名称
   user: "" # 服务用户名
   password: "" # 服务密码
   host: "0.0.0.0" # 服务地址
@@ -17,7 +17,7 @@ mysql: # 数据库配置
 apple: # 苹果推送配置
   keyId: "BNY5GUGV38"
   teamId: "FUWV6U942Q"
-  topic: "com.twown.paw"
+  topic: "me.uuneo.pushback"
   develop: false
   apnsPrivateKey: |-
     -----BEGIN PRIVATE KEY-----
@@ -26,11 +26,3 @@ apple: # 苹果推送配置
     ZdDf3w+8FRQxFBKSD/Opt7n3tmtnmnl9Vrtw/nUXX4ldasxA2gErXR4YbEL9Z+uJ
     REJP/5bp
     -----END PRIVATE KEY-----
-
-email: # 邮件配置
-  smtpHost: "smtp.qq.com"
-  smtpPort: "587"
-  from: "newbear@twown.com"
-  password: "abcdefghijklmn"
-  subject: "NewBear 邮件验证"
-  bodySuffix: " 是 NewBear App邮件验证码，请在 3 分钟内完成验证。"
