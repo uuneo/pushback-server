@@ -1,8 +1,8 @@
 version: '3'
 
 services:
-  NewBearService:
-    image: uuneo/pushback:latest
+  PushbackServer:
+    image: neouu/pushback:latest
     container_name: PushbackServer
     restart: always
     ports:
