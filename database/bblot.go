@@ -62,10 +62,11 @@ func (d *BboltDB) DeviceTokenByKey(key string) (string, error) {
 
 func (d *BboltDB) SaveDeviceTokenByKey(key, deviceToken string) (string, error) {
 	err := BBDB.Update(func(tx *bbolt.Tx) error {
+
 		bucket := tx.Bucket([]byte(config.LocalConfig.System.Name))
 		// If the deviceKey is empty or the corresponding deviceToken cannot be obtained from the database,
 		// it is considered as a new device registration
-		if key == "" || bucket.Get([]byte(key)) == nil {
+		if key == "" {
 			// Generate a new UUID as the deviceKey when a new device register
 			key = shortuuid.New()
 		}
@@ -94,7 +95,7 @@ func bboltSetup(dataDir string) {
 
 		bboltDB, err := bbolt.Open(filepath.Join(dataDir, config.LocalConfig.System.Name+".db"), 0600, nil)
 		if err != nil {
-			log.Fatalf("failed to create database file(%s): %v", filepath.Join(dataDir, "bark.db"), err)
+			log.Fatalf("failed to create database file(%s): %v", filepath.Join(dataDir, config.LocalConfig.System.Name+".db"), err)
 		}
 		err = bboltDB.Update(func(tx *bbolt.Tx) error {
 			_, err = tx.CreateBucketIfNotExists([]byte(config.LocalConfig.System.Name))

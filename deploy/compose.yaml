@@ -1,7 +1,7 @@
 
 services:
   PushbackServer:
-    image: neouu/pushback:latest
+    image: ghcr.io/uuneo/pushback:latest
     container_name: PushbackServer
     restart: always
     ports:
