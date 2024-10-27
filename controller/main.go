@@ -204,6 +204,11 @@ func ChangeKeyHandler(c *gin.Context) {
 		return
 	}
 
+	if len(newKey) < 3 {
+		c.JSON(http.StatusOK, failed(400, "newKey is too short"))
+		return
+	}
+
 	if database.DB.KeyExists(oldKey) && !database.DB.KeyExists(newKey) {
 		_, err := database.DB.SaveDeviceTokenByKey(newKey, deviceToken)
 		if err != nil {
