@@ -34,7 +34,7 @@ func RegisterController(c *gin.Context) {
 		c.JSON(http.StatusOK, failed(500, "device registration failed: %v", err))
 	}
 
-	c.JSON(http.StatusOK, device)
+	c.JSON(http.StatusOK, data(device))
 }
 
 func ChangeKeyHandler(c *gin.Context) {
