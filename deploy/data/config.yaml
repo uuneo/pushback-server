@@ -4,7 +4,7 @@ system: # 系统配置
   password: "" # 服务密码
   host: "0.0.0.0" # 服务地址
   port: "8080" # 服务端口
-  mode: "release" # debug, release
+  mode: "debug" # debug, release
   dbType: "default" # 数据库类型
   dbPath: "/deploy" # 数据库文件路径
 

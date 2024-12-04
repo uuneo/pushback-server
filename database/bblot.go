@@ -95,7 +95,7 @@ func bboltSetup(dataDir string) {
 
 		bboltDB, err := bbolt.Open(filepath.Join(dataDir, config.LocalConfig.System.Name+".db"), 0600, nil)
 		if err != nil {
-			log.Fatalf("failed to create database file(%s): %v", filepath.Join(dataDir, "bark.db"), err)
+			log.Fatalf("failed to create database file(%s): %v", filepath.Join(dataDir, config.LocalConfig.System.Name+".db"), err)
 		}
 		err = bboltDB.Update(func(tx *bbolt.Tx) error {
 			_, err = tx.CreateBucketIfNotExists([]byte(config.LocalConfig.System.Name))

@@ -3,8 +3,8 @@ package push
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"github.com/sideshow/apns2"
-	"github.com/sideshow/apns2/token"
+	"github.com/uuneo/apns2"
+	"github.com/uuneo/apns2/token"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"log"
@@ -15,10 +15,17 @@ import (
 )
 
 var (
-	CLI *apns2.Client
+	CLIENTS = make(chan *apns2.Client, 1)
 )
 
 func init() {
+	CreateAPNSClient(config.LocalConfig.System.MaxApnsClientCount)
+}
+
+func CreateAPNSClient(maxClientCount int) {
+
+	CLIENTS = make(chan *apns2.Client, min(runtime.NumCPU(), maxClientCount))
+
 	authKey, err := token.AuthKeyFromBytes([]byte(config.LocalConfig.Apple.ApnsPrivateKey))
 	if err != nil {
 		log.Printf("failed to create APNS auth key: %v\n", err)
@@ -41,23 +48,24 @@ func init() {
 		rootCAs.AppendCertsFromPEM([]byte(ca))
 	}
 
-	CLI = &apns2.Client{
-		Token: &token.Token{
-			AuthKey: authKey,
-			KeyID:   config.LocalConfig.Apple.KeyID,
-			TeamID:  config.LocalConfig.Apple.TeamID,
-		},
-		HTTPClient: &http.Client{
-			Transport: &http2.Transport{
-				DialTLSContext: DialTLSContext,
-				TLSClientConfig: &tls.Config{
-					RootCAs: rootCAs,
-				},
+	for i := 0; i < min(runtime.NumCPU(), maxClientCount); i++ {
+		CLIENTS <- &apns2.Client{
+			Token: &token.Token{
+				AuthKey: authKey,
+				KeyID:   config.LocalConfig.Apple.KeyID,
+				TeamID:  config.LocalConfig.Apple.TeamID,
 			},
-			Timeout: apns2.HTTPClientTimeout,
-		},
-		Host: selectPushMode(),
+			HTTPClient: &http.Client{
+				Transport: &http2.Transport{
+					DialTLSContext:  DialTLSContext,
+					TLSClientConfig: &tls.Config{RootCAs: rootCAs},
+				},
+				Timeout: apns2.HTTPClientTimeout,
+			},
+			Host: selectPushMode(),
+		}
 	}
+
 	log.Printf("init apns client success...\n")
 }
 
