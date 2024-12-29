@@ -5,26 +5,21 @@ import "github.com/spf13/viper"
 // URL > QUERY > POST
 
 const (
-	LevelA = "active"
-	LevelT = "timeSensitive"
-	LevelP = "passive"
-)
+	CategoryDefault = "myNotificationCategory" // 模版标志
+	AutoCopyDefault = "0"                      // 默认自动复制
+	LevelDefault    = "active"
 
-const (
-	CategoryDefault  = "myNotificationCategory" // 模版标志
-	AutoCopyDefault  = "0"                      // 默认自动复制
-	IsArchiveDefault = "1"                      // 默认归档
-	DeviceKey        = "devicekey"              // 设备key
-	DeviceToken      = "devicetoken"            // 设备token 	// 类别
-	Title            = "title"                  // 标题
-	Subtitle         = "subtitle"
-	Body             = "body"       // 内容
-	IsArchive        = "isarchive"  // 是否归档
-	Group            = "group"      // 组
-	Sound            = "sound"      // 声音
-	AutoCopy         = "autocopy"   // 自动复制
-	Level            = "level"      // 等级
-	CipherText       = "ciphertext" // 密文
+	DeviceKey   = "devicekey"   // 设备key
+	DeviceToken = "devicetoken" // 设备token 	// 类别
+	Title       = "title"       // 标题
+	Subtitle    = "subtitle"    // 副标题
+	Body        = "body"        // 内容
+	Group       = "group"       // 组
+	Sound       = "sound"       // 声音
+	AutoCopy    = "autocopy"    // 自动复制
+	Level       = "level"       // 等级
+	TTL         = "ttl"         // 是否归档
+	CipherText  = "ciphertext"  // 密文
 )
 
 const (

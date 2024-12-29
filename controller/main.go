@@ -138,11 +138,9 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 	}
 
 	// 处理默认值
-	setDefault(paramsResult, config.IsArchive, config.IsArchiveDefault)
-
 	setDefault(paramsResult, config.AutoCopy, config.AutoCopyDefault)
 
-	setDefault(paramsResult, config.Level, config.LevelA)
+	setDefault(paramsResult, config.Level, config.LevelDefault)
 
 	setDefault(paramsResult, config.Body, "-No Content-")
 
