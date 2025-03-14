@@ -18,13 +18,11 @@ const (
 	Sound       = "sound"       // 声音
 	AutoCopy    = "autocopy"    // 自动复制
 	Level       = "level"       // 等级
-	TTL         = "ttl"         // 是否归档
-	CipherText  = "ciphertext"  // 密文
 )
 
 const (
 	FilePathEnv     = "PUSHBACK_CONFIG"
-	DefaultFilePath = "/data/config.yaml"
+	DefaultFilePath = "./config/config.yaml"
 	TestFilePath    = "/data/config.yaml"
 	ReleaseFilePath = "/data/config.yaml"
 )

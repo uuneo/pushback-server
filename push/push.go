@@ -19,7 +19,22 @@ func Push(params map[string]string, pushType apns2.EPushType) error {
 		Category(config.CategoryDefault)
 
 	// 添加自定义参数
-	addCustomParams(pl, params)
+	skipKeys := map[string]struct{}{
+		config.DeviceKey:   {},
+		config.DeviceToken: {},
+		config.Title:       {},
+		config.Body:        {},
+		config.Sound:       {},
+	}
+
+	for k, v := range params {
+		k = config.UnifiedParameter(k)
+		if _, skip := skipKeys[k]; skip {
+			continue
+		}
+		fmt.Println("Custom parameter added:", k, v)
+		pl.Custom(k, v)
+	}
 
 	// 设置通知组（线程 ID）
 	if group := config.VerifyMap(params, config.Group); group != "" {
@@ -43,25 +58,4 @@ func Push(params map[string]string, pushType apns2.EPushType) error {
 		return fmt.Errorf("APNs push failed: %s", resp.Reason)
 	}
 	return nil
-}
-
-// addCustomParams 添加自定义字段到 payload
-func addCustomParams(pl *payload.Payload, params map[string]string) {
-	// 定义需要跳过的关键字段
-	skipKeys := map[string]struct{}{
-		config.DeviceKey:   {},
-		config.DeviceToken: {},
-		config.Title:       {},
-		config.Body:        {},
-		config.Sound:       {},
-	}
-
-	for k, v := range params {
-		k = config.UnifiedParameter(k)
-		if _, skip := skipKeys[k]; skip {
-			continue
-		}
-		fmt.Println("Custom parameter added:", k, v)
-		pl.Custom(k, v)
-	}
 }
