@@ -45,8 +45,6 @@ func Auth() gin.HandlerFunc {
 	if localUser == "" || localPassword == "" {
 		return func(c *gin.Context) { c.Next() }
 	} else {
-		return gin.BasicAuth(gin.Accounts{
-			localUser: localPassword,
-		})
+		return gin.BasicAuth(gin.Accounts{localUser: localPassword})
 	}
 }
