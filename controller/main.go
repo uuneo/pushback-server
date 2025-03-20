@@ -15,6 +15,21 @@ import (
 )
 
 func RegisterController(c *gin.Context) {
+
+	if c.Request.Method == "GET" {
+		deviceKey := c.Param("device_key")
+		if deviceKey == "" {
+			c.JSON(http.StatusOK, failed(400, "device key is empty"))
+			return
+		}
+		if database.DB.KeyExists(deviceKey) {
+			c.JSON(http.StatusOK, success())
+		} else {
+			c.JSON(http.StatusOK, failed(400, "device key is not exist"))
+		}
+		return
+	}
+
 	var err error
 	var device DeviceInfo
 
@@ -35,39 +50,6 @@ func RegisterController(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, data(device))
-}
-
-func ChangeKeyHandler(c *gin.Context) {
-
-	var device ChangeKeyInfo
-
-	if err := c.BindJSON(&device); err != nil {
-		c.JSON(http.StatusOK, failed(400, "failed to get device token: %v", err))
-		return
-	}
-
-	if device.DeviceToken == "" {
-		c.JSON(http.StatusOK, failed(400, "deviceToken is empty"))
-		return
-	}
-
-	if len(device.NewKey) < 3 {
-		c.JSON(http.StatusOK, failed(400, "newKey is too short"))
-		return
-	}
-
-	if database.DB.KeyExists(device.OldKey) && !database.DB.KeyExists(device.NewKey) {
-		_, err := database.DB.SaveDeviceTokenByKey(device.NewKey, device.DeviceToken)
-		if err != nil {
-			c.JSON(http.StatusOK, failed(500, "device registration failed: %v", err))
-			return
-		}
-		c.JSON(http.StatusOK, data(device))
-
-	} else {
-		c.JSON(http.StatusOK, failed(400, "deviceKey or newKey is invalid"))
-	}
-
 }
 
 func BaseController(c *gin.Context) {
@@ -166,7 +148,7 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 func QRCode(c *gin.Context) {
 	url := config.LocalConfig.System.HostName
 	var png []byte
-	png, err := qrcode.Encode(url, qrcode.Medium, 256)
+	png, err := qrcode.Encode(url, qrcode.Medium, 1024)
 	if err != nil {
 		c.JSON(200, "生成二维码失败")
 		return

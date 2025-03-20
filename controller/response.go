@@ -44,9 +44,3 @@ type DeviceInfo struct {
 	Key   string `json:"key"`
 	Token string `json:"token"`
 }
-
-type ChangeKeyInfo struct {
-	OldKey      string `json:"oldKey"`
-	NewKey      string `json:"newKey"`
-	DeviceToken string `json:"deviceToken"`
-}
