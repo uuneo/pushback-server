@@ -2,6 +2,7 @@ package controller
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/sideshow/apns2"
 	"github.com/skip2/go-qrcode"
@@ -70,12 +71,22 @@ func BaseController(c *gin.Context) {
 
 }
 
+func GetPushToken(c *gin.Context) {
+	deviceKey := c.Param("deviceKey")
+	fmt.Println(deviceKey)
+	token, err := database.DB.DeviceTokenByKey(deviceKey)
+	if err != nil {
+		c.JSON(http.StatusOK, failed(500, "failed to get device token: %v", err))
+		return
+	}
+	c.JSON(http.StatusOK, data(token))
+}
+
 func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 	var err error
 	var paramsResult = make(map[string]string)
 	// 获取所有路径参数
 	switch len(c.Params) {
-
 	case 1:
 		paramsResult[config.DeviceKey] = c.Params[0].Value
 	case 2:
