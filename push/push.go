@@ -2,6 +2,7 @@ package push
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/sideshow/apns2"
 	"github.com/sideshow/apns2/payload"
 	"pushbackServer/config"
@@ -11,11 +12,13 @@ import (
 // Push message to APNs server
 func Push(params map[string]string, pushType apns2.EPushType) error {
 	// 创建 payload，并填充通知标题、内容、声音和类别等字段
+	messageId, _ := uuid.NewUUID()
 	pl := payload.NewPayload().
 		AlertTitle(config.VerifyMap(params, config.Title)).
 		AlertSubtitle(config.VerifyMap(params, config.Subtitle)).
 		AlertBody(config.VerifyMap(params, config.Body)).
 		Sound(config.VerifyMap(params, config.Sound)).
+		Custom("messageId", messageId.String()).
 		Category(config.CategoryDefault)
 
 	// 添加自定义参数
