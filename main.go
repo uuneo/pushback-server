@@ -28,7 +28,8 @@ func main() {
 	router.POST("/:deviceKey/:params1/:params2", controller.BaseController).Use(Auth())
 	router.GET("/:deviceKey/:params1", controller.BaseController).Use(Auth())
 	router.POST("/:deviceKey/:params1", controller.BaseController).Use(Auth())
-	router.GET("/:deviceKey", controller.GetPushToken).Use(Auth())
+	router.GET("/:deviceKey/pushback", controller.GetPushToken).Use(Auth())
+	router.GET("/:deviceKey", controller.BaseController).Use(Auth())
 	router.POST("/:deviceKey", controller.BaseController).Use(Auth())
 
 	addr := config.LocalConfig.System.Host + ":" + config.LocalConfig.System.Post
