@@ -19,7 +19,7 @@ func Push(params map[string]string, pushType apns2.EPushType) error {
 		AlertBody(config.VerifyMap(params, config.Body)).
 		Sound(config.VerifyMap(params, config.Sound)).
 		Custom("messageId", messageId.String()).
-		Category(config.CategoryDefault)
+		Category(params[config.Category])
 
 	// 添加自定义参数
 	skipKeys := map[string]struct{}{

@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -114,11 +115,23 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 	}
 
 	if c.Request.Method == "POST" {
-		err = c.Request.ParseForm()
-		if err == nil {
-			for k, v := range c.Request.PostForm {
-				key := config.UnifiedParameter(k)
-				paramsResult[key] = v[0] // 直接赋值
+		contentType := c.Request.Header.Get("Content-Type")
+		if contentType == "application/json" {
+			var jsonData map[string]interface{}
+			err = json.NewDecoder(c.Request.Body).Decode(&jsonData)
+			if err == nil {
+				for k, v := range jsonData {
+					key := config.UnifiedParameter(k)
+					paramsResult[key] = fmt.Sprintf("%v", v) // 转换为字符串存储
+				}
+			}
+		} else {
+			err = c.Request.ParseForm()
+			if err == nil {
+				for k, v := range c.Request.PostForm {
+					key := config.UnifiedParameter(k)
+					paramsResult[key] = v[0] // 直接赋值
+				}
 			}
 		}
 
@@ -136,6 +149,8 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 	setDefault(paramsResult, config.Level, config.LevelDefault)
 
 	setDefault(paramsResult, config.Body, "-No Content-")
+
+	setDefault(paramsResult, config.Category, config.CategoryDefault)
 
 	if config.VerifyMap(paramsResult, config.Sound) != "" && !strings.HasSuffix(paramsResult[config.Sound], ".caf") {
 		paramsResult[config.Sound] = paramsResult[config.Sound] + ".caf"

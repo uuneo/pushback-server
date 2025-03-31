@@ -21,7 +21,7 @@ func init() {
 		if configEnv := os.Getenv(FilePathEnv); configEnv == "" { // 判断 internal.FilePathEnv 常量存储的环境变量是否为空
 			switch gin.Mode() {
 			case gin.DebugMode:
-				configTem = DefaultFilePath
+				configTem = DebugFilePath
 				fmt.Printf(formatConfigNameString, gin.DebugMode, configTem)
 			case gin.ReleaseMode:
 				configTem = ReleaseFilePath

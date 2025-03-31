@@ -5,9 +5,11 @@ import "github.com/spf13/viper"
 // URL > QUERY > POST
 
 const (
-	CategoryDefault = "myNotificationCategory" // 模版标志
-	AutoCopyDefault = "0"                      // 默认自动复制
-	LevelDefault    = "active"
+	Category         = "category"
+	CategoryDefault  = "myNotificationCategory" // 模版标志
+	CategoryMarkdown = "markdown"
+	AutoCopyDefault  = "0" // 默认自动复制
+	LevelDefault     = "active"
 
 	DeviceKey   = "devicekey"   // 设备key
 	DeviceToken = "devicetoken" // 设备token 	// 类别
@@ -22,7 +24,7 @@ const (
 
 const (
 	FilePathEnv     = "PUSHBACK_CONFIG"
-	DefaultFilePath = "/data/config.yaml"
+	DebugFilePath   = "/data/config.yaml"
 	TestFilePath    = "/data/config.yaml"
 	ReleaseFilePath = "/data/config.yaml"
 )
