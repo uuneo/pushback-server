@@ -4,7 +4,7 @@ FROM golang:1.23-alpine AS builder
 # 设置工作目录
 WORKDIR /app
 
-#ENV GOPROXY=https://goproxy.cn,direct
+ENV GOPROXY=https://goproxy.cn,direct
 
 COPY . .
 
