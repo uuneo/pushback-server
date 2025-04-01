@@ -28,6 +28,7 @@ func Push(params map[string]string, pushType apns2.EPushType) error {
 		config.Title:       {},
 		config.Body:        {},
 		config.Sound:       {},
+		config.Category:    {},
 	}
 
 	for k, v := range params {

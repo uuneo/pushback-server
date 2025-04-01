@@ -116,6 +116,7 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 
 	if c.Request.Method == "POST" {
 		contentType := c.Request.Header.Get("Content-Type")
+		fmt.Println(contentType)
 		if contentType == "application/json" {
 			var jsonData map[string]interface{}
 			err = json.NewDecoder(c.Request.Body).Decode(&jsonData)
