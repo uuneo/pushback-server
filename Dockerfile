@@ -1,5 +1,5 @@
 # 第一阶段：构建阶段
-FROM h1sx1yx4.mirror.aliyuncs.com/golang:1.24.1-alpine AS builder
+FROM golang:1.23-alpine AS builder
 
 # 设置工作目录
 WORKDIR /app
