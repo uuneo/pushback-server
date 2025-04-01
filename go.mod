@@ -1,6 +1,6 @@
 module pushbackServer
 
-go 1.24.1
+go 1.23.7
 
 require (
 	github.com/fsnotify/fsnotify v1.8.0
