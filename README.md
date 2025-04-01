@@ -13,6 +13,7 @@
 
 ### 配置
 
+
 ```yaml
 system:
   name: "NewBearService"
