@@ -27,7 +27,20 @@ func RegisterController(c *gin.Context) {
 		}
 		if database.DB.KeyExists(deviceKey) {
 			c.JSON(http.StatusOK, success())
+			return
 		} else {
+			admin, ok := c.Get("admin")
+
+			if ok && admin.(string) == config.LocalConfig.Apple.AdminId {
+				_, err := database.DB.SaveDeviceTokenByKey(deviceKey, "admin")
+				if err != nil {
+					c.JSON(http.StatusOK, failed(400, "device key is not exist"))
+					return
+				}
+				c.JSON(http.StatusOK, success())
+				return
+			}
+
 			c.JSON(http.StatusOK, failed(400, "device key is not exist"))
 		}
 		return

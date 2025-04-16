@@ -32,6 +32,7 @@ type Apple struct {
 	KeyID          string `mapstructure:"keyID" json:"keyID" yaml:"keyID"`
 	TeamID         string `mapstructure:"teamID" json:"teamID" yaml:"teamID"`
 	Develop        bool   `mapstructure:"develop" json:"develop" yaml:"develop"`
+	AdminId        string `mapstructure:"adminId" json:"adminId" yaml:"adminId"`
 }
 
 type Email struct {

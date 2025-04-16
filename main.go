@@ -11,14 +11,15 @@ func main() {
 	gin.SetMode(config.LocalConfig.System.Mode)
 
 	router := gin.Default()
+	router.Use(Admin())
 	router.GET("/", controller.QRCode)
-	router.GET("/info", controller.GetInfo).Use(Auth())
+	router.GET("/info", controller.GetInfo)
 	// App内部使用
 	router.GET("/ping", controller.Ping)
 	router.GET("/health", func(c *gin.Context) { c.JSON(http.StatusOK, "ok") })
 	// 注册
 	router.POST("/register", controller.RegisterController)
-	router.GET("/register/:device_key", controller.RegisterController)
+	router.GET("/register/:device_key", controller.RegisterController).Use(Admin())
 
 	// 推送请求
 	router.POST("/push", controller.BaseController)
@@ -47,5 +48,14 @@ func Auth() gin.HandlerFunc {
 		return func(c *gin.Context) { c.Next() }
 	} else {
 		return gin.BasicAuth(gin.Accounts{localUser: localPassword})
+	}
+}
+func Admin() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 获取请求头中的 Authorization 字段
+		admin := c.GetHeader("Authorization")
+		c.Set("admin", admin)
+		// 如果通过验证，继续执行请求处理
+		c.Next()
 	}
 }
