@@ -37,7 +37,9 @@ func Push(params map[string]string, pushType apns2.EPushType) error {
 		pl.Custom(k, v)
 	}
 	// 设置回调地址
-	pl.Custom(config.Host, config.LocalConfig.System.HostName)
+	if config.LocalConfig.System.HostName != "" {
+		pl.Custom(config.Host, config.LocalConfig.System.HostName)
+	}
 
 	// 创建并发送通知
 	resp, err := CLI.Push(&apns2.Notification{

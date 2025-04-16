@@ -20,7 +20,6 @@ func main() {
 	// 注册
 	router.POST("/register", controller.RegisterController)
 	router.GET("/register/:device_key", controller.RegisterController).Use(Admin())
-
 	// 推送请求
 	router.POST("/push", controller.BaseController)
 	router.GET("/:deviceKey/:params1/:params2/:params3", controller.BaseController).Use(Auth())
@@ -50,6 +49,7 @@ func Auth() gin.HandlerFunc {
 		return gin.BasicAuth(gin.Accounts{localUser: localPassword})
 	}
 }
+
 func Admin() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 获取请求头中的 Authorization 字段

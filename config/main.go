@@ -19,17 +19,8 @@ func init() {
 	flag.Parse()
 	if configTem == "" { // 判断命令行参数是否为空
 		if configEnv := os.Getenv(FilePathEnv); configEnv == "" { // 判断 internal.FilePathEnv 常量存储的环境变量是否为空
-			switch gin.Mode() {
-			case gin.DebugMode:
-				configTem = DebugFilePath
-				fmt.Printf(formatConfigNameString, gin.DebugMode, configTem)
-			case gin.ReleaseMode:
-				configTem = ReleaseFilePath
-				fmt.Printf(formatConfigNameString, gin.ReleaseMode, configTem)
-			case gin.TestMode:
-				configTem = TestFilePath
-				fmt.Printf(formatConfigNameString, gin.TestMode, configTem)
-			}
+			configTem = ConfigFilePath
+			fmt.Printf(formatConfigNameString, gin.ReleaseMode, configTem)
 		} else { // internal.FilePathEnv 常量存储的环境变量不为空 将值赋值于config
 			configTem = configEnv
 			fmt.Printf(formatConfigNameString, FilePathEnv, configTem)
