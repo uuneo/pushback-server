@@ -5,8 +5,9 @@ import (
 	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/sideshow/apns2"
+	"github.com/google/uuid"
 	"github.com/skip2/go-qrcode"
+	"github.com/uuneo/apns2"
 	"net/http"
 	"pushbackServer/config"
 	"pushbackServer/database"
@@ -119,6 +120,7 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 		if contentType == "application/json" {
 			var jsonData map[string]interface{}
 			err = json.NewDecoder(c.Request.Body).Decode(&jsonData)
+
 			if err == nil {
 				for k, v := range jsonData {
 					key := config.UnifiedParameter(k)
@@ -151,6 +153,11 @@ func ToParamsHandler(c *gin.Context) (map[string]string, error) {
 	setDefault(paramsResult, config.Body, "-No Content-")
 
 	setDefault(paramsResult, config.Category, config.CategoryDefault)
+
+	if config.VerifyMap(paramsResult, config.ID) == "" {
+		messageID, _ := uuid.NewUUID()
+		paramsResult[config.ID] = messageID.String()
+	}
 
 	if config.VerifyMap(paramsResult, config.Sound) != "" && !strings.HasSuffix(paramsResult[config.Sound], ".caf") {
 		paramsResult[config.Sound] = paramsResult[config.Sound] + ".caf"

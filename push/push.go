@@ -2,9 +2,8 @@ package push
 
 import (
 	"fmt"
-	"github.com/google/uuid"
-	"github.com/sideshow/apns2"
-	"github.com/sideshow/apns2/payload"
+	"github.com/uuneo/apns2"
+	"github.com/uuneo/apns2/payload"
 	"pushbackServer/config"
 	"time"
 )
@@ -12,13 +11,12 @@ import (
 // Push message to APNs server
 func Push(params map[string]string, pushType apns2.EPushType) error {
 	// 创建 payload，并填充通知标题、内容、声音和类别等字段
-	messageId, _ := uuid.NewUUID()
 	pl := payload.NewPayload().
 		AlertTitle(config.VerifyMap(params, config.Title)).
 		AlertSubtitle(config.VerifyMap(params, config.Subtitle)).
 		AlertBody(config.VerifyMap(params, config.Body)).
 		Sound(config.VerifyMap(params, config.Sound)).
-		Custom("messageId", messageId.String()).
+		TargetContentID(params[config.ID]).
 		Category(params[config.Category])
 
 	// 添加自定义参数
@@ -36,14 +34,10 @@ func Push(params map[string]string, pushType apns2.EPushType) error {
 		if _, skip := skipKeys[k]; skip {
 			continue
 		}
-		fmt.Println("Custom parameter added:", k, v)
 		pl.Custom(k, v)
 	}
-
-	// 设置通知组（线程 ID）
-	if group := config.VerifyMap(params, config.Group); group != "" {
-		pl = pl.ThreadID(group)
-	}
+	// 设置回调地址
+	pl.Custom(config.Host, config.LocalConfig.System.HostName)
 
 	// 创建并发送通知
 	resp, err := CLI.Push(&apns2.Notification{

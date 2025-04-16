@@ -3,8 +3,8 @@ package push
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"github.com/sideshow/apns2"
-	"github.com/sideshow/apns2/token"
+	"github.com/uuneo/apns2"
+	"github.com/uuneo/apns2/token"
 	"golang.org/x/net/context"
 	"golang.org/x/net/http2"
 	"log"

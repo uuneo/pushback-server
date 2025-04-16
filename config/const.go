@@ -13,7 +13,9 @@ const (
 
 	DeviceKey   = "devicekey"   // 设备key
 	DeviceToken = "devicetoken" // 设备token 	// 类别
+	ID          = "id"          // ID
 	Title       = "title"       // 标题
+	Host        = "host"        // 主机
 	Subtitle    = "subtitle"    // 副标题
 	Body        = "body"        // 内容
 	Group       = "group"       // 组
@@ -24,7 +26,7 @@ const (
 
 const (
 	FilePathEnv     = "PUSHBACK_CONFIG"
-	DebugFilePath   = "/data/config.yaml"
+	DebugFilePath   = "./config/config.yaml"
 	TestFilePath    = "/data/config.yaml"
 	ReleaseFilePath = "/data/config.yaml"
 )
