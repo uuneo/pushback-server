@@ -30,12 +30,10 @@ func Push(params *config.ParamsResult, pushType apns2.EPushType) error {
 	}
 
 	for pair := params.Params.Oldest(); pair != nil; pair = pair.Next() {
-		fmt.Println(pair.Key, pair.Value)
 		if _, skip := skipKeys[pair.Key]; skip {
 			continue
 		}
 		pl.Custom(pair.Key, pair.Value)
-
 	}
 
 	CLI := <-CLIENTS // 从池中获取一个客户端
