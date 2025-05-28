@@ -35,7 +35,7 @@ jobs:
         id: vars
         run: |
           echo "build_version=$(git describe --tags)" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT
-          echo "build_date=$(date -u +'%Y-%m-%d %H:%M:%S')" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT
+          echo "build_date=$(date -u +'%Y-%m-%d-%H:%M:%S')" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT
           echo "commit_id=$(git rev-parse --short HEAD)" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT
 
       - name: Debug Tags
