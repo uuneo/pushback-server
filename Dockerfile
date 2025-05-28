@@ -16,7 +16,6 @@ ARG COMMIT_ID
 
 # 下载依赖项并构建，注入变量
 RUN go mod download
-# 用 shell 形式的 RUN 命令，保证环境变量被替换
 RUN go build -ldflags="-X main.version=${VERSION} -X main.buildDate=${BUILD_DATE} -X main.commitID=${COMMIT_ID}" -o main main.go
 
 FROM alpine
