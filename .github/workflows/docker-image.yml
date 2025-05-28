@@ -34,9 +34,9 @@ jobs:
       - name: Set Environment Variables
         id: vars
         run: |
-          echo "build_version=$(git describe --tags)" >> $GITHUB_ENV
-          echo "build_date=$(date -u +'%Y-%m-%d %H:%M:%S')" >> $GITHUB_ENV
-          echo "commit_id=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "build_version=$(git describe --tags)" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT
+          echo "build_date=$(date -u +'%Y-%m-%d %H:%M:%S')" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT
+          echo "commit_id=$(git rev-parse --short HEAD)" | tee -a $GITHUB_ENV >> $GITHUB_OUTPUT
 
       - name: Debug Tags
         run: git tag -l
@@ -52,9 +52,9 @@ jobs:
             linux/arm64
             linux/amd64
           build-args: |
-            VERSION=${{ env.build_version }}
-            BUILD_DATE=${{ env.build_date }}
-            COMMIT_ID=${{ env.commit_id }}
+            VERSION=${{ steps.vars.outputs.build_version }}
+            BUILD_DATE=${{ steps.vars.outputs.build_date }}
+            COMMIT_ID=${{ steps.vars.outputs.commit_id }}
           tags: |
             sunvx/pushback:latest
             sunvx/pushback:${{ env.build_version }}
