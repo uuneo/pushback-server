@@ -14,10 +14,11 @@ ARG VERSION
 ARG BUILD_DATE
 ARG COMMIT_ID
 
-# 下载依赖项并构建，注入变量
-RUN go mod download
-RUN go build -ldflags="-X main.version=${VERSION} -X main.buildDate=${BUILD_DATE} -X main.commitID=${COMMIT_ID}" -o main main.go
+RUN go mod tidy && go mod verify && go mod download
 
+RUN echo "VERSION=${VERSION} BUILD_DATE=${BUILD_DATE} COMMIT_ID=${COMMIT_ID}"
+
+RUN go build -v -x -ldflags="-X main.version=${VERSION} -X main.buildDate=${BUILD_DATE} -X main.commitID=${COMMIT_ID}" -o main main.go
 FROM alpine
 
 WORKDIR /app
