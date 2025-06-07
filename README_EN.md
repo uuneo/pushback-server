@@ -53,6 +53,23 @@ apple: # Apple Push Configuration
   adminId: "" # Admin ID
 ```
 
+### Command Line Arguments
+
+In addition to the configuration file, you can also configure the service using command line arguments or environment variables:
+
+| Argument | Environment Variable | Description | Default |
+|----------|---------------------|-------------|---------|
+| `--addr` | `PB_SERVER_ADDR` | Server listening address | empty |
+| `--config`, `-c` | `PB_SERVER_CONFIG` | Configuration file path | `/data/config.yaml` |
+| `--dsn` | `PB_SERVER_DSN` | MySQL DSN | empty |
+| `--maxApnsClientCount`, `-max` | `PB_MAX_APNS_CLIENT_COUNT` | Maximum APNs client connections | 0 (unlimited) |
+| `--debug` | `PB_DEBUG` | Enable debug mode | false |
+| `--develop`, `-dev` | `PB_DEVELOP` | Enable push development mode | false |
+| `--user`, `-u` | `PB_USER` | Server username | empty |
+| `--password`, `-p` | `PB_PASSWORD` | Server password | empty |
+
+Command line arguments take precedence over the configuration file, and environment variables take precedence over command line arguments.
+
 ---
 
 ## 🔌 API Endpoints

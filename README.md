@@ -53,6 +53,23 @@ apple: # 苹果推送配置
   adminId: "" # 管理员ID
 ```
 
+### 命令行参数
+
+除了配置文件外，还可以通过命令行参数或环境变量来配置服务：
+
+| 参数 | 环境变量 | 说明 | 默认值 |
+|------|----------|------|--------|
+| `--addr` | `PB_SERVER_ADDR` | 服务器监听地址 | 空 |
+| `--config`, `-c` | `PB_SERVER_CONFIG` | 配置文件路径 | `/data/config.yaml` |
+| `--dsn` | `PB_SERVER_DSN` | MySQL DSN | 空 |
+| `--maxApnsClientCount`, `-max` | `PB_MAX_APNS_CLIENT_COUNT` | 最大 APNs 客户端数量 | 0（无限制） |
+| `--debug` | `PB_DEBUG` | 启用调试模式 | false |
+| `--develop`, `-dev` | `PB_DEVELOP` | 启用推送开发模式 | false |
+| `--user`, `-u` | `PB_USER` | 服务器用户名 | 空 |
+| `--password`, `-p` | `PB_PASSWORD` | 服务器密码 | 空 |
+
+命令行参数优先级高于配置文件，环境变量优先级高于命令行参数。
+
 ---
 
 ## 🔌 API 接口说明
