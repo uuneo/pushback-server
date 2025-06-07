@@ -2,7 +2,9 @@
 # Pushback 알림 서비스 어댑터
 
 > **⚠️ 프로젝트 설명**
+> 
 > [DOCS](https://docs.uuneo.com/#/deploy)
+>
 > 이 프로젝트는 [BARK](https://github.com/Finb/bark-server)를 기반으로 합니다 — Golang 기반의 푸시 알림 서비스 백엔드입니다. `Gin` 프레임워크를 사용하여 인터페이스를 재작성하여 유지보수성과 확장성을 향상시켰습니다.
 >
 > 서버에서 iOS 클라이언트로의 푸시 알림에 적합하며, 특히 [Pushback](https://pushback.uuneo.com) 앱에 최적화되어 있습니다.
@@ -52,6 +54,23 @@ apple: # 애플 푸시 설정
     -----END PRIVATE KEY-----
   adminId: "" # 관리자 ID
 ```
+
+### 명령줄 인수
+
+설정 파일 외에도 명령줄 인수 또는 환경 변수를 사용하여 서비스를 구성할 수 있습니다:
+
+| 인수 | 환경 변수 | 설명 | 기본값 |
+|------|----------|------|--------|
+| `--addr` | `PB_SERVER_ADDR` | 서버 리스닝 주소 | 빈 값 |
+| `--config`, `-c` | `PB_SERVER_CONFIG` | 설정 파일 경로 | `/data/config.yaml` |
+| `--dsn` | `PB_SERVER_DSN` | MySQL DSN | 빈 값 |
+| `--maxApnsClientCount`, `-max` | `PB_MAX_APNS_CLIENT_COUNT` | 최대 APNs 클라이언트 연결 수 | 0（제한 없음） |
+| `--debug` | `PB_DEBUG` | 디버그 모드 활성화 | false |
+| `--develop`, `-dev` | `PB_DEVELOP` | 푸시 개발 모드 활성화 | false |
+| `--user`, `-u` | `PB_USER` | 서버 사용자 이름 | 빈 값 |
+| `--password`, `-p` | `PB_PASSWORD` | 서버 비밀번호 | 빈 값 |
+
+명령줄 인수는 설정 파일보다 우선순위가 높으며, 환경 변수는 명령줄 인수보다 우선순위가 높습니다.
 
 ---
 

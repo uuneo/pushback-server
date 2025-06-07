@@ -2,7 +2,9 @@ English | **[中文](README.md)** | **[日本語](README_JA.md)** | **[한국어
 # Pushback Notification Service Adapter
 
 > **⚠️ Project Description**
+> 
 > [DOCS](https://docs.uuneo.com/#/deploy)
+>
 > This project is based on [BARK](https://github.com/Finb/bark-server) — a Golang-based push notification service backend. We've rewritten its interfaces using the `Gin` framework for better maintainability and extensibility.
 >
 > Suitable for server-to-iOS client push notifications, especially optimized for the [Pushback](https://pushback.uuneo.com) App.
@@ -52,6 +54,23 @@ apple: # Apple Push Configuration
     -----END PRIVATE KEY-----
   adminId: "" # Admin ID
 ```
+
+### Command Line Arguments
+
+In addition to the configuration file, you can also configure the service using command line arguments or environment variables:
+
+| Argument | Environment Variable | Description | Default |
+|----------|---------------------|-------------|---------|
+| `--addr` | `PB_SERVER_ADDR` | Server listening address | empty |
+| `--config`, `-c` | `PB_SERVER_CONFIG` | Configuration file path | `/data/config.yaml` |
+| `--dsn` | `PB_SERVER_DSN` | MySQL DSN | empty |
+| `--maxApnsClientCount`, `-max` | `PB_MAX_APNS_CLIENT_COUNT` | Maximum APNs client connections | 0 (unlimited) |
+| `--debug` | `PB_DEBUG` | Enable debug mode | false |
+| `--develop`, `-dev` | `PB_DEVELOP` | Enable push development mode | false |
+| `--user`, `-u` | `PB_USER` | Server username | empty |
+| `--password`, `-p` | `PB_PASSWORD` | Server password | empty |
+
+Command line arguments take precedence over the configuration file, and environment variables take precedence over command line arguments.
 
 ---
 

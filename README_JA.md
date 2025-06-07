@@ -2,7 +2,9 @@
 # Pushback 通知サービスアダプター
 
 > **⚠️ プロジェクト説明**
+> 
 > [DOCS](https://docs.uuneo.com/#/deploy)
+>
 > このプロジェクトは [BARK](https://github.com/Finb/bark-server) をベースにしています — Golangベースのプッシュ通知サービスバックエンドです。`Gin`フレームワークを使用してインターフェースを書き直し、保守性と拡張性を向上させました。
 >
 > サーバーからiOSクライアントへのプッシュ通知に適しており、特に [Pushback](https://pushback.uuneo.com) アプリに最適化されています。
@@ -52,6 +54,23 @@ apple: # アップルプッシュ設定
     -----END PRIVATE KEY-----
   adminId: "" # 管理者ID
 ```
+
+### コマンドライン引数
+
+設定ファイルに加えて、コマンドライン引数または環境変数を使用してサービスを設定することもできます：
+
+| 引数 | 環境変数 | 説明 | デフォルト値 |
+|------|----------|------|------------|
+| `--addr` | `PB_SERVER_ADDR` | サーバーリッスンアドレス | 空 |
+| `--config`, `-c` | `PB_SERVER_CONFIG` | 設定ファイルパス | `/data/config.yaml` |
+| `--dsn` | `PB_SERVER_DSN` | MySQL DSN | 空 |
+| `--maxApnsClientCount`, `-max` | `PB_MAX_APNS_CLIENT_COUNT` | 最大APNsクライアント接続数 | 0（無制限） |
+| `--debug` | `PB_DEBUG` | デバッグモード有効化 | false |
+| `--develop`, `-dev` | `PB_DEVELOP` | プッシュ開発モード有効化 | false |
+| `--user`, `-u` | `PB_USER` | サーバーユーザー名 | 空 |
+| `--password`, `-p` | `PB_PASSWORD` | サーバーパスワード | 空 |
+
+コマンドライン引数は設定ファイルより優先され、環境変数はコマンドライン引数より優先されます。
 
 ---
 
