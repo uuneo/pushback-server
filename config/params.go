@@ -13,11 +13,13 @@ import (
 // 使用有序映射存储参数，保证参数的处理顺序
 type ParamsResult struct {
 	Params *orderedmap.OrderedMap[string, interface{}]
+	IsNan  bool
 }
 
 // NewParamsResult 创建新的参数结果对象
 // 参数:
 //   - c: gin上下文对象，用于获取请求参数
+//
 // 返回:
 //   - *ParamsResult: 初始化后的参数结果对象
 func NewParamsResult(c *gin.Context) *ParamsResult {
@@ -26,6 +28,7 @@ func NewParamsResult(c *gin.Context) *ParamsResult {
 	}
 	main.HandlerParamsToMapOrder(c)
 	main.SetDefault()
+	main.IsNan = ParamsNan(main)
 	return main
 }
 
@@ -36,6 +39,7 @@ func NewParamsResult(c *gin.Context) *ParamsResult {
 // 3. 转换为小写
 // 参数:
 //   - s: 需要规范化的键名字符串
+//
 // 返回:
 //   - string: 规范化后的键名
 func (p *ParamsResult) NormalizeKey(s string) string {
@@ -48,6 +52,7 @@ func (p *ParamsResult) NormalizeKey(s string) string {
 // Get 获取参数值
 // 参数:
 //   - key: 参数键名
+//
 // 返回:
 //   - interface{}: 参数值，如果不存在则返回空字符串
 func (p *ParamsResult) Get(key string) interface{} {
@@ -221,4 +226,30 @@ func convenientProcessor(params *orderedmap.OrderedMap[string, interface{}]) {
 			params.Set(Sound, val.(string)+".caf")
 		}
 	}
+}
+
+func ParamsNan(paramsResult *ParamsResult) bool {
+	isEmpty := func(v interface{}) bool {
+		s, ok := v.(string)
+		if !ok {
+			return true
+		}
+		return len(strings.TrimSpace(s)) == 0
+	}
+
+	title, titleOk := paramsResult.Params.Get(Title)
+	subTitle, subTitleOk := paramsResult.Params.Get(Subtitle)
+	body, bodyOk := paramsResult.Params.Get(Body)
+	cipherText, cipherTextOk := paramsResult.Params.Get(CipherText)
+
+	titleNan := !titleOk || isEmpty(title)
+	subTitleNan := !subTitleOk || isEmpty(subTitle)
+	bodyNan := !bodyOk || isEmpty(body)
+	cipherNan := !cipherTextOk || isEmpty(cipherText)
+
+	if bodyNan && !cipherNan {
+		paramsResult.Params.Set(Body, "--body is empty--")
+	}
+
+	return titleNan && subTitleNan && bodyNan && cipherNan
 }

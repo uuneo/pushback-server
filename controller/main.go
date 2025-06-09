@@ -9,7 +9,6 @@ import (
 	"pushbackServer/config"
 	"pushbackServer/database"
 	"pushbackServer/push"
-	"strings"
 	"time"
 )
 
@@ -72,38 +71,9 @@ func RegisterController(c *gin.Context) {
 func BaseController(c *gin.Context) {
 	ParamsResult := config.NewParamsResult(c)
 
-	paramsNan := func() bool {
-		var titleNan, subTitleNan, bodyNan = false, false, false
-		title, titleOk := ParamsResult.Params.Get(config.Title)
-		subTitle, subTitleOk := ParamsResult.Params.Get(config.Subtitle)
-		body, bodyOk := ParamsResult.Params.Get(config.Body)
-
-		if !titleOk && !subTitleOk && !bodyOk {
-			return true
-		}
-		if titleOk {
-			if title1 := strings.ReplaceAll(title.(string), " ", ""); len(title1) <= 0 {
-				titleNan = true
-			}
-		}
-
-		if subTitleOk {
-			if subTitle1 := strings.ReplaceAll(subTitle.(string), " ", ""); len(subTitle1) <= 0 {
-				subTitleNan = true
-			}
-		}
-
-		if bodyOk {
-			if body1 := strings.ReplaceAll(body.(string), " ", ""); len(body1) <= 0 {
-				bodyNan = true
-			}
-		}
-
-		return titleNan && subTitleNan && bodyNan
-	}()
 	// 如果 title, subtitle 和 body 都为空，则返回错误
-	if paramsNan {
-		c.JSON(http.StatusOK, failed(http.StatusBadRequest, "title, subtitle and body cannot be all empty"))
+	if ParamsResult.IsNan {
+		c.JSON(http.StatusOK, failed(http.StatusBadRequest, "title, subTitle, cipherText and body cannot be all empty"))
 		return
 	}
 
