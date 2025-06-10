@@ -18,7 +18,7 @@ const (
 	Host        = "host"        // 主机
 	Callback    = "callback"    // 回调
 	Subtitle    = "subtitle"    // 副标题
-	CipherText  = "cipherText"  // 密文
+	CipherText  = "ciphertext"  // 密文
 	Body        = "body"        // 内容
 	Content     = "content"     // 内容（兼容）
 	Text        = "text"        // 内容（兼容）
