@@ -262,5 +262,9 @@ func ParamsNan(ParamsResult *ParamsResult) bool {
 		}
 	}
 
+	if bodyNan && !cipherNan {
+		ParamsResult.Params.Set(Body, "--body is empty--")
+	}
+
 	return titleNan && subTitleNan && bodyNan && cipherNan
 }
