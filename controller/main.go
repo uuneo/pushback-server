@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/skip2/go-qrcode"
 	"github.com/uuneo/apns2"
 	"net/http"
 	"pushbackServer/config"
@@ -103,6 +104,42 @@ func BaseController(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, success())
+}
+
+// HomeController 处理首页请求
+// 支持两种功能:
+// 1. 通过id参数移除未推送数据
+// 2. 生成二维码图片
+func HomeController(c *gin.Context) {
+
+	if id := c.Query("id"); id != "" {
+		RemoveNotPushedData(id)
+		c.Status(http.StatusOK)
+		return
+	}
+
+	call := c.Query("call")
+	if call != "" {
+		WebsocketHandler(c, call)
+		return
+	}
+
+	url := func() string {
+		if code := c.Query("code"); code != "" {
+			return code
+		} else {
+			return "https://" + c.Request.Host
+		}
+	}()
+
+	png, err := qrcode.Encode(url, qrcode.High, 1024)
+
+	if err != nil {
+		c.JSON(http.StatusOK, failed(http.StatusInternalServerError, "failed to generate QR code: %v", err))
+		return
+	}
+
+	c.Data(http.StatusOK, "image/png", png)
 }
 
 // GetPushToken 获取设备的推送token
