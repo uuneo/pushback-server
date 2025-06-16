@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/skip2/go-qrcode"
 	"github.com/uuneo/apns2"
 	"net/http"
 	"pushbackServer/config"
@@ -89,17 +88,14 @@ func BaseController(c *gin.Context) {
 			c.JSON(http.StatusOK, failed(http.StatusBadRequest, "failed to get device token: %v", err))
 			return
 		}
-		ParamsResult.Params.Set(config.DeviceToken, token)
+		ParamsResult.DeviceToken = token
 	}
-
-	err := push.Push(ParamsResult, apns2.PushTypeAlert)
-
-	if err != nil {
+	if err := push.MorePush(ParamsResult, apns2.PushTypeAlert); err != nil {
 		c.JSON(http.StatusOK, failed(http.StatusInternalServerError, "push failed: %v", err))
 		return
 	}
 
-	// TODO: 这里需要判断是否是管理员
+	// 这里需要判断是否是管理员
 	admin, ok := c.Get("admin")
 	// 如果是管理员，加入到未推送列表
 	if ok && admin.(bool) {
@@ -120,35 +116,6 @@ func GetPushToken(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, data(token))
-}
-
-// HomeController 处理首页请求
-// 支持两种功能:
-// 1. 通过id参数移除未推送数据
-// 2. 生成二维码图片
-func HomeController(c *gin.Context) {
-	id := c.Query("id")
-	if id != "" {
-		RemoveNotPushedData(id)
-		c.Status(http.StatusOK)
-		return
-	}
-
-	url := "https://" + c.Request.Host
-
-	code := c.Query("code")
-
-	if code != "" {
-		url = code
-	}
-	png, err := qrcode.Encode(url, qrcode.High, 1024)
-
-	if err != nil {
-		c.JSON(http.StatusOK, failed(http.StatusInternalServerError, "failed to generate QR code: %v", err))
-		return
-	}
-
-	c.Data(http.StatusOK, "image/png", png)
 }
 
 // Ping 处理心跳检测请求

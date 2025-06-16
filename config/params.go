@@ -2,18 +2,26 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/wk8/go-ordered-map/v2"
 	"strings"
+	"unicode/utf8"
 )
+
+const MaxBytes = 4096
+
+type ParamsMap = orderedmap.OrderedMap[string, interface{}]
 
 // ParamsResult 结构体用于存储和管理请求参数
 // 使用有序映射存储参数，保证参数的处理顺序
 type ParamsResult struct {
-	Params *orderedmap.OrderedMap[string, interface{}]
-	IsNan  bool
+	Params      *ParamsMap
+	Results     []*ParamsMap
+	DeviceToken string
+	IsNan       bool
 }
 
 // NewParamsResult 创建新的参数结果对象
@@ -24,11 +32,16 @@ type ParamsResult struct {
 //   - *ParamsResult: 初始化后的参数结果对象
 func NewParamsResult(c *gin.Context) *ParamsResult {
 	main := &ParamsResult{
-		Params: orderedmap.New[string, interface{}](),
+		Params:  orderedmap.New[string, interface{}](),
+		Results: []*ParamsMap{},
 	}
 	main.HandlerParamsToMapOrder(c)
 	main.SetDefault()
 	main.IsNan = ParamsNan(main)
+	results, err := SplitPayloadIfExceedsLimit(main.Params)
+	if err == nil {
+		main.Results = results
+	}
 	return main
 }
 
@@ -62,6 +75,13 @@ func (p *ParamsResult) Get(key string) interface{} {
 	return ""
 }
 
+func PMGet(params *ParamsMap, key string) string {
+	if value, ok := params.Get(key); ok {
+		return fmt.Sprint(value)
+	}
+	return ""
+}
+
 // SetDefault 设置参数的默认值
 // 主要功能：
 // 1. 为未设置或为空的参数设置默认值
@@ -73,7 +93,7 @@ func (p *ParamsResult) SetDefault() {
 	// params: 参数映射
 	// key: 需要设置默认值的键
 	// other: 设置默认值的回调函数
-	setDefault := func(params *orderedmap.OrderedMap[string, interface{}], key string, other func(string, interface{})) {
+	setDefault := func(params *ParamsMap, key string, other func(string, interface{})) {
 		newKey := p.NormalizeKey(key)
 		if value, ok := params.Get(newKey); !ok || value == nil || len(fmt.Sprint(value)) == 0 {
 			other(newKey, value)
@@ -179,7 +199,7 @@ func (p *ParamsResult) HandlerParamsToMapOrder(c *gin.Context) {
 // 2. 处理 markdown 相关字段，设置对应的 category
 // 3. 规范化 category 字段的值
 // 4. 处理声音文件后缀
-func convenientProcessor(params *orderedmap.OrderedMap[string, interface{}]) {
+func convenientProcessor(params *ParamsMap) {
 	// 如果没有 body 字段，尝试从其他字段转换
 	if _, ok := params.Get(Body); !ok {
 		if data, dataOk := params.Get(Data); dataOk {
@@ -252,4 +272,94 @@ func ParamsNan(paramsResult *ParamsResult) bool {
 	}
 
 	return titleNan && subTitleNan && bodyNan && cipherNan
+}
+
+func SplitPayloadIfExceedsLimit(basePayload *ParamsMap) ([]*ParamsMap, error) {
+	// 取出原始 body
+	rawBody, ok := basePayload.Get(Body)
+	if !ok {
+		return nil, errors.New("no body field")
+	}
+	bodyStr, ok := rawBody.(string)
+	if !ok {
+		return nil, errors.New("body is not string")
+	}
+
+	// 复制 payload 并去掉 body 字段，计算剩余占用字节
+	base := copyPayload(basePayload)
+	base.Delete(Body)
+	baseJson, _ := json.Marshal(orderedToMap(base))
+	baseSize := len(baseJson)
+
+	// 如果总大小不超 4096，直接返回原始 payload
+	if baseSize+len([]byte(bodyStr)) <= MaxBytes {
+		return []*ParamsMap{}, nil
+	}
+
+	// 需要分片
+	remaining := MaxBytes - baseSize - 100 // 留余：考虑 index/count/body key等
+	if remaining <= 0 {
+		return nil, errors.New("base payload too large without body")
+	}
+
+	// 分片 body
+	chunks := splitByUTF8Bytes(bodyStr, remaining)
+	count := len(chunks)
+	var results []*ParamsMap
+
+	for i, part := range chunks {
+		p := copyPayload(base)
+		p.Set(Body, part)
+		p.Set(Index, i)
+		p.Set(Count, count)
+		results = append(results, p)
+	}
+
+	return results, nil
+}
+
+func copyPayload(orig *ParamsMap) *ParamsMap {
+	newMap := orderedmap.New[string, interface{}]()
+	for el := orig.Oldest(); el != nil; el = el.Next() {
+		newMap.Set(el.Key, el.Value)
+	}
+	return newMap
+}
+
+func orderedToMap(o *ParamsMap) map[string]interface{} {
+	out := make(map[string]interface{})
+	for el := o.Oldest(); el != nil; el = el.Next() {
+		out[el.Key] = el.Value
+	}
+	return out
+}
+
+func splitByUTF8Bytes(s string, maxBytes int) []string {
+	var result []string
+	start := 0
+	current := 0
+	totalBytes := 0
+
+	for i := 0; i < len(s); {
+		r, size := utf8.DecodeRuneInString(s[i:])
+		if r == utf8.RuneError && size == 1 {
+			size = 1 // invalid rune fallback
+		}
+
+		if totalBytes+size > maxBytes {
+			result = append(result, s[start:current])
+			start = current
+			totalBytes = 0
+		}
+
+		totalBytes += size
+		current += size
+		i += size
+	}
+
+	if start < len(s) {
+		result = append(result, s[start:])
+	}
+
+	return result
 }

@@ -20,7 +20,7 @@ REJP/5bp
 		Topic:   "me.uuneo.Meoworld",
 		KeyID:   "BNY5GUGV38",
 		TeamID:  "FUWV6U942Q",
-		Develop: false,
+		Develop: true,
 		AdminId: "",
 	},
 }

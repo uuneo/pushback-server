@@ -17,7 +17,7 @@ func init() {
 		for range ticker.C {
 			fmt.Println("开始检查未推送数据")
 			NotPushedDataList.Range(func(key, value any) bool {
-				data, ok := value.(*NotPushedData)
+				data1, ok := value.(*NotPushedData)
 				if !ok {
 					NotPushedDataList.Delete(key) // 类型异常也清除
 					return true
@@ -26,19 +26,19 @@ func init() {
 				now := time.Now()
 
 				// 超过 24 小时未成功推送，直接清除
-				if now.Sub(data.LastPushDate) > 24*time.Hour {
+				if now.Sub(data1.LastPushDate) > 24*time.Hour {
 					NotPushedDataList.Delete(key)
 					return true
 				}
 
 				// 推送节流策略：每次失败后等待 Count × 10 分钟
-				nextTry := data.LastPushDate.Add(time.Duration(data.Count) * 10 * time.Minute)
+				nextTry := data1.LastPushDate.Add(time.Duration(data1.Count) * 10 * time.Minute)
 				if nextTry.After(now) {
 					return true // 还没到下一次推送时间，跳过
 				}
 
 				// 执行推送
-				if err := push.Push(data.Params, data.PushType); err != nil {
+				if err := push.MorePush(data1.Params, data1.PushType); err != nil {
 					NotPushedDataList.Delete(key) // 推送失败直接删
 				}
 
